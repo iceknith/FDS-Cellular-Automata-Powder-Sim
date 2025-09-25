@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://clrsw6fo3fdc5"]
+
+[ext_resource type="Script" uid="uid://vdw0sy04gdyy" path="res://main.gd" id="1_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://dbvagnprf4hru" path="res://CA-engine/cellular_automata_engine.tscn" id="2_0xm2m"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_0xm2m")
+
+[node name="CellularAutomataEngine" parent="." instance=ExtResource("2_0xm2m")]
+gridSize = Vector2(2000, 1000)
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 38.0
+offset_bottom = 30.0
+text = "100"

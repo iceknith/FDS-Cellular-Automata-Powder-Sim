@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dbvagnprf4hru"]
+
+[ext_resource type="Script" uid="uid://d3jeco8lcdnpw" path="res://CA-engine/CellularAutomataEngine.cs" id="1_ho3f8"]
+
+[node name="CellularAutomataEngine" type="Node2D"]
+script = ExtResource("1_ho3f8")
