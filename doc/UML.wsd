@@ -1,0 +1,57 @@
+@startuml UML-Projet
+
+class CellularAutomataEngine {
+
+}
+Element <-- CellularAutomataEngine
+
+abstract class Element {
+    # color : Color
+    # density : double
+
+    + update(oldElementArray Element[,], currentElementArray : Element[,], x : int, y : int, maxX : int, maxY : int)
+}
+
+abstract class Gas extends Element {
+    + update(...)
+}
+
+class Steam extends Gas {
+
+}
+
+abstract class Liquid extends Element {
+    + update(...)
+}
+
+class Water extends Liquid {
+
+}
+
+class Oil extends Liquid {
+    
+}
+
+abstract class Powder extends Element {
+    + wet : bool
+
+    + update(...)
+}
+
+class Sand extends Powder {
+
+}
+
+class Soil extends Powder {
+
+}
+
+abstract class Solid extends Element {
+    + update(...)
+}
+
+class Wall extends Solid {
+
+}
+
+@enduml

@@ -90,7 +90,7 @@ public partial class CellularAutomataEngine : Node2D
             {
                 if (oldElementArray[x, y] != null)
                 {
-                    oldElementArray[x, y].move(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
+                    oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
                 }
             }
         }

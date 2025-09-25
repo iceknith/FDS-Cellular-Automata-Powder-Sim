@@ -2,7 +2,10 @@ using Godot;
 
 public class Powder : Element
 {
-    override public void move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+
+    public bool wet { get; set; }
+
+    override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
     {
         if (y + 1 >= maxY) return;
 
