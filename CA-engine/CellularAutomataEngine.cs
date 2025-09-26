@@ -74,52 +74,43 @@ public partial class CellularAutomataEngine : Node2D
         QueueRedraw();
     }
 
-    private void createElementAtClickPos(Element e)
+	private void PlacementHandler()
     {
-        Vector2 pos = GetViewport().GetMousePosition() / cellSize;
+        foreach (BaseButton button in buttonGroup.GetButtons())
+        {
+            if (button.ButtonPressed)
+            {
+                selectedElement = (string)button.GetMeta("element");
+                break;
+            }
+        }
+
+        if (Input.IsActionPressed("LeftClick"))
+        {
+            Vector2 pos = GetViewport().GetMousePosition() / cellSize;
             if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
             {
-                elementArray[(int)pos.X, (int)pos.Y] = e;
+                switch (selectedElement) // ugly but was the only thing on my mind
+                {
+                    case "Sand":
+                        elementArray[(int)pos.X, (int)pos.Y] = new Sand();
+                        break;
+
+                    case "Water":
+                        elementArray[(int)pos.X, (int)pos.Y] = new Water();
+                        break;
+
+                    case "Oil":
+                        elementArray[(int)pos.X, (int)pos.Y] = new Oil();
+                        break;
+
+                    default:
+                        break;
+                }
+
             }
+        }
     }
-
-	private void PlacementHandler()
-	{
-		foreach (BaseButton button in buttonGroup.GetButtons())
-		{
-			if (button.ButtonPressed)
-			{
-				selectedElement = (string)button.GetMeta("element");
-				break;
-			}
-		}
-
-		if (Input.IsActionPressed("LeftClick"))
-		{
-			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-			if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
-			{
-				switch (selectedElement) // ugly but was the only thing on my mind
-				{
-					case "Sand":
-						elementArray[(int)pos.X, (int)pos.Y] = new Sand();
-						break;
-					
-					case "Water":
-						elementArray[(int)pos.X, (int)pos.Y] = new Water();
-						break;
-					
-					case "Oil":
-						elementArray[(int)pos.X, (int)pos.Y] = new Oil();
-						break;
-
-					default:
-						break;
-				}
-				
-			}
-		}
-	}
 
     private void CellUpdateHandler()
     {
