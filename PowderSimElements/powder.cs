@@ -7,28 +7,31 @@ public class Powder : Element
 
     override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
     {
+        if (currentElementArray[x, y] != this) return;
+            // Return if a movement has already been done
+
         if (y + 1 >= maxY) return;
 
         // Down movement
-        if (oldElementArray[x, y + 1] == null)
+        if (canMoveDownOnElement(oldElementArray[x, y+1]))
         {
-            currentElementArray[x, y] = null;
+            currentElementArray[x, y] = currentElementArray[x, y+1];
             currentElementArray[x, y + 1] = this;
             return;
         }
-
-        // Left movement
-        if (0 <= x - 1 && oldElementArray[x - 1, y + 1] == null)
+        
+        // Left Down movement
+        if (0 <= x - 1 && canMoveDownOnElement(oldElementArray[x - 1, y + 1]))
         {
-            currentElementArray[x, y] = null;
+            currentElementArray[x, y] = currentElementArray[x - 1, y + 1];
             currentElementArray[x - 1, y + 1] = this;
             return;
         }
-
-        // Right movement
-        if (x + 1 < maxX && oldElementArray[x + 1, y + 1] == null)
+        
+        // Right Down movement
+        if (x + 1 < maxX && canMoveDownOnElement(oldElementArray[x + 1, y + 1]))
         {
-            currentElementArray[x, y] = null;
+            currentElementArray[x, y] = currentElementArray[x + 1, y + 1];
             currentElementArray[x + 1, y + 1] = this;
             return;
         }

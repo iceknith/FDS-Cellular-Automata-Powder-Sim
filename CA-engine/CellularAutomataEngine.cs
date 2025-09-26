@@ -16,12 +16,12 @@ public partial class CellularAutomataEngine : Node2D
     // --- Public (exported) element instantiation --- //
     [ExportCategory("Simulation Size")]
     [Export]
-    public Vector2 cellSize { get; set; } = new Vector2(1, 1);
+    public Vector2 cellSize { get; set; } = new Vector2(4,4);
     [Export]
-    public Vector2 gridSize { get; set; } = new Vector2(1000, 400);
+    public Vector2 gridSize { get; set; } = new Vector2(100, 100);
 
 
-    // --- Mathods --- //
+    // --- Methods --- //
     public override void _Ready()
     {
         base._EnterTree();
@@ -63,24 +63,33 @@ public partial class CellularAutomataEngine : Node2D
         base._Process(delta);
 
         PlacementHandler();
-        CellMovementHandler();
+        CellUpdateHandler();
 
         QueueRedraw();
+    }
+
+    private void createElementAtClickPos(Element e)
+    {
+        Vector2 pos = GetViewport().GetMousePosition() / cellSize;
+            if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
+            {
+                elementArray[(int)pos.X, (int)pos.Y] = e;
+            }
     }
 
     private void PlacementHandler()
     {
         if (Input.IsActionPressed("LeftClick"))
         {
-            Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-            if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
-            {
-                elementArray[(int)pos.X, (int)pos.Y] = new Sand();
-            }
+            createElementAtClickPos(new Sand());
+        }
+        if (Input.IsActionPressed("RightClick"))
+        {
+            createElementAtClickPos(new Water());
         }
     }
 
-    private void CellMovementHandler()
+    private void CellUpdateHandler()
     {
         Element[,] oldElementArray = (Element[,]) elementArray.Clone();
 

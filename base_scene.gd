@@ -24,6 +24,10 @@ func _draw() -> void:
 				draw_rect(Rect2(Vector2(x,y) * cell_size, cell_size), Color.LIGHT_GOLDENROD, true)
 
 func _process(delta: float) -> void:
+	#
+	$Control/Label.text = str(Engine.get_frames_per_second())
+
+	
 	# Process adding sand
 	if Input.is_action_pressed("LeftClick"):
 		var pos:Vector2 = get_viewport().get_mouse_position() / cell_size
