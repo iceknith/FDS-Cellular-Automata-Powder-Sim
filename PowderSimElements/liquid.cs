@@ -2,12 +2,12 @@ using Godot;
 
 public class Liquid : Element
 {
-	private int maxLifetime = 60 * 5;
+	private int maxLifetime = 60 * 3;
 	private int lifetime;
 	private RandomNumberGenerator rng = new();
 	private bool flowingLeft;
 
-	override public void init(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	public Liquid()
 	{
 		lifetime = maxLifetime;
 
@@ -21,6 +21,7 @@ public class Liquid : Element
 		}
 		;
 	}
+
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 
@@ -38,7 +39,7 @@ public class Liquid : Element
 		}
 
 		//Diag Left movement
-		if (0 <= x - 1 && y + 1 < maxY && Element.metaIsNull(x - 1, y + 1, currentElementArray, oldElementArray))
+		if (0 <= x - 1 && y + 1 < maxY && !Element.isMoreDense(x, y, x-1, y+1, oldElementArray))
 		{
 			base.move(x, y, x - 1, y + 1, currentElementArray);
 			lifetime = maxLifetime; // reset lifetime (there was a meaningful movement)
@@ -46,7 +47,7 @@ public class Liquid : Element
 		}
 
 		// Diag Right movement
-		if (x + 1 < maxX && y + 1 < maxY && Element.metaIsNull(x + 1, y+1, currentElementArray, oldElementArray))
+		if (x + 1 < maxX && y + 1 < maxY && !Element.isMoreDense(x, y, x+1, y+1, oldElementArray))
 		{
 			base.move(x, y, x + 1, y + 1, currentElementArray);
 			lifetime = maxLifetime; // reset lifetime (there was a meaningful movement)
@@ -54,7 +55,7 @@ public class Liquid : Element
 		}
 
 		// Flowing left
-		if (flowingLeft && 0 <= x - 1 && Element.metaIsNull(x - 1, y, currentElementArray, oldElementArray))
+		if (flowingLeft && 0 <= x - 1 && !Element.isMoreDense(x, y, x-1, y, oldElementArray))
 		{
 			base.move(x, y, x - 1, y, currentElementArray);
 			lifetime -= 1;
@@ -66,7 +67,7 @@ public class Liquid : Element
 		}
 
 		// Flowing right
-		if (!flowingLeft && x + 1 < maxX && Element.metaIsNull(x + 1, y, currentElementArray, oldElementArray))
+		if (!flowingLeft && x + 1 < maxX && !Element.isMoreDense(x, y, x+1, y, oldElementArray) && !Element.isMoreDense(x, y, x+1, y, currentElementArray)) // weird edge case
 		{
 			base.move(x, y, x + 1, y, currentElementArray);
 			lifetime -= 1;

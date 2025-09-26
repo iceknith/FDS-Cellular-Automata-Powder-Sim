@@ -5,6 +5,6 @@ public class Oil : Liquid
 	public Oil()
 	{
 		density = 4;
-		color = Colors.Yellow;
+		color = Colors.LightYellow;
 	}
 }

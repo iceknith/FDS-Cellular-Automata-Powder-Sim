@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Godot;
 
 public abstract class Element
@@ -6,8 +7,6 @@ public abstract class Element
 	public double density { get; protected set; }
 
 	abstract public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY);
-	abstract public void init(Element[,] currentElementArray, int x, int y, int maxX, int maxY);
-
 	public static bool metaIsNull(int x, int y, Element[,] currentElementArray, Element[,] oldElementArray)
 	{
 		// Needed to check before any movement that there is no cell already planning to move to that place 
@@ -15,12 +14,21 @@ public abstract class Element
 		return currentElementArray[x, y] == null && oldElementArray[x, y] == null;
 	}
 
+	public static bool isMoreDense(int x, int y, int targetX, int targetY, Element[,] oldElementArray)
+	{
+		// compares the density of the cell to the target cell, returns true if target is more dense
+		// always false if target is null
+		if (oldElementArray[x, y] == null){ return true; }
+		
+		return oldElementArray[targetX, targetY] != null && oldElementArray[targetX, targetY].density >= oldElementArray[x, y].density;
+	}
+
 	public bool gravity(int x, int y, int maxY, Element[,] currentElementArray, Element[,] oldElementArray)
 	{
 		// returns true if gravity was applied, false if not. 
 		if (y + 1 >= maxY) { return false; }
 
-		if (oldElementArray[x, y + 1] != null && oldElementArray[x, y + 1].density >= oldElementArray[x, y].density)
+		if (isMoreDense(x,y,x,y+1,oldElementArray))
 		{
 			return false; // there is something beneath the cell that is higher or equal density
 		}

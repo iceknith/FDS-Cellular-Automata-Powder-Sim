@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 public partial class CellularAutomataEngine : Node2D
@@ -10,7 +11,11 @@ public partial class CellularAutomataEngine : Node2D
 	private int cellWidth;
 	private int cellHeight;
 	private int gridWidth;
-	private int gridHeight; 
+	private int gridHeight;
+
+	private ButtonGroup buttonGroup;
+
+	public string selectedElement; // TODO idk how to do differently
 
 
 	// --- Public (exported) element instantiation --- //
@@ -28,6 +33,9 @@ public partial class CellularAutomataEngine : Node2D
 		cellHeight = (int)cellSize.Y;
 		gridWidth = (int)gridSize.X;
 		gridHeight = (int)gridSize.Y;
+
+		Button firstButton = GetNode<Button>("../Control/ElementContainer/Sand");
+		buttonGroup = firstButton.ButtonGroup;
 
 		elementArray = new Element[gridWidth, gridHeight];
 	}
@@ -69,22 +77,38 @@ public partial class CellularAutomataEngine : Node2D
 
 	private void PlacementHandler()
 	{
+		foreach (BaseButton button in buttonGroup.GetButtons())
+		{
+			if (button.ButtonPressed)
+			{
+				selectedElement = (string)button.GetMeta("element");
+				break;
+			}
+		}
+
 		if (Input.IsActionPressed("LeftClick"))
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
 			if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
 			{
-				elementArray[(int)pos.X, (int)pos.Y] = new Sand();
-			}
-		}
-		if (Input.IsActionPressed("RightClick"))
-		{
-			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-			if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
-			{
-				Water cell = new Water();
-				cell.init(elementArray, (int)pos.X, (int)pos.Y, gridWidth, gridHeight);
-				elementArray[(int)pos.X, (int)pos.Y] = cell;
+				switch (selectedElement) // ugly but was the only thing on my mind
+				{
+					case "Sand":
+						elementArray[(int)pos.X, (int)pos.Y] = new Sand();
+						break;
+					
+					case "Water":
+						elementArray[(int)pos.X, (int)pos.Y] = new Water();
+						break;
+					
+					case "Oil":
+						elementArray[(int)pos.X, (int)pos.Y] = new Oil();
+						break;
+
+					default:
+						break;
+				}
+				
 			}
 		}
 	}
@@ -97,10 +121,7 @@ public partial class CellularAutomataEngine : Node2D
 		{
 			for (int y = 0; y < gridHeight; y++)
 			{
-				if (oldElementArray[x, y] != null)
-				{
-					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
-				}
+				oldElementArray[x, y]?.update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
 			}
 		}
 	}
