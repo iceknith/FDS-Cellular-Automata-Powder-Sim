@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://clrsw6fo3fdc5"]
+[gd_scene load_steps=4 format=3 uid="uid://clrsw6fo3fdc5"]
 
 [ext_resource type="Script" uid="uid://vdw0sy04gdyy" path="res://main.gd" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dbvagnprf4hru" path="res://CA-engine/cellular_automata_engine.tscn" id="2_0xm2m"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_0xm2m"]
+allow_unpress = true
 
 [node name="Main" type="Node"]
 script = ExtResource("1_0xm2m")
@@ -10,12 +13,48 @@ script = ExtResource("1_0xm2m")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -38.0
+offset_bottom = 30.0
+grow_horizontal = 0
+text = "100"
+
+[node name="ElementContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="Label" type="Label" parent="Control"]
-layout_mode = 0
-offset_right = 38.0
-offset_bottom = 30.0
-text = "100"
+[node name="Sand" type="Button" parent="Control/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "SAND"
+metadata/element = "Sand"
+
+[node name="Water" type="Button" parent="Control/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "WATER
+"
+metadata/element = "Water"
+
+[node name="Oil" type="Button" parent="Control/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "OIL"
+metadata/element = "Oil"

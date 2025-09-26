@@ -14,37 +14,20 @@ public class Powder : Element
     override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
     {
         if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
-        if (y + 1 >= maxY) return; // Return if we are on the bottom of the array
 
-		// Down movement
-        gravity(x, y, maxY, currentElementArray, oldElementArray);
+        // Down movement
+        if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) return;
 
-		// Diag Left and Diag Right movement possible
-		if (x+1 < maxX && canMoveDownOnElement(oldElementArray[x+1, y+1]) && 0 <= x-1 && canMoveDownOnElement(oldElementArray[x+1, y+1]))
-		{
-			if (rng.RandiRange(0, 1) == 0)
-			{
-				move(x, y, x+1, y+1, currentElementArray);
-			}
-			else
-			{
-				move(x, y, x-1, y+1, currentElementArray);
-			}
-			return;
+        // Diag movements
+        if (rng.RandiRange(0, 1) == 0)
+        {
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) return;
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) return;
 		}
-
-		// Diag Right movement
-		if (0 <= x-1 && canMoveDownOnElement(oldElementArray[x-1, y+1]))
-		{
-			move(x, y, x-1, y+1, currentElementArray);
-			return;
-		}
-
-		// Diag Left movement
-		if (x+1 < maxX && canMoveDownOnElement(oldElementArray[x+1, y+1]))
-		{
-			move(x, y, x+1, y+1, currentElementArray);
-			return;
-		}
+        else
+        {
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) return;
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) return;
+        }
 	}
 }

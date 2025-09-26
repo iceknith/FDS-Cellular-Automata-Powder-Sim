@@ -23,61 +23,23 @@ public class Liquid : Element
             return;
         }
 
-        if (y + 1 < maxY) // If we can move down
+        // Down movement
+        if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) { lifetime = maxLifetime; return; }
+
+        // Diag movements
+        if (rng.RandiRange(0, 1) == 0)
         {
-            // Down movement
-            if (canMoveDownOnElement(oldElementArray[x, y + 1]))
-            {
-                lifetime = maxLifetime;
-                currentElementArray[x, y] = currentElementArray[x, y + 1];
-                currentElementArray[x, y + 1] = this;
-                return;
-            }
-
-            // Diag Left and Diag Right movement possible
-            if (x+1 < maxX && canMoveDownOnElement(oldElementArray[x+1, y+1]) && 0 <= x-1 && canMoveDownOnElement(oldElementArray[x-1, y+1]))
-            {
-                lifetime = maxLifetime;
-                if (rng.RandiRange(0, 1) == 0)
-                {
-                    move(x, y, x + 1, y + 1, currentElementArray);
-                    directionX = 1;
-                }
-                else
-                {
-                    move(x, y, x - 1, y + 1, currentElementArray);
-                    directionX = -1;
-                }
-                return;
-            }
-
-            // Left Down movement
-            if (0 <= x-1 && canMoveDownOnElement(oldElementArray[x-1, y+1]))
-            {
-                lifetime = maxLifetime;
-                move(x, y, x-1, y+1, currentElementArray);
-                directionX = -1;
-                return;
-            }
-
-            // Right Down movement
-            if (x + 1 < maxX && canMoveDownOnElement(oldElementArray[x + 1, y + 1]))
-            {
-                lifetime = maxLifetime;
-                move(x, y, x + 1, y + 1, currentElementArray);
-                directionX = 1;
-                return;
-            }
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) { lifetime = maxLifetime; return; }
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) { lifetime = maxLifetime; return; }
+		}
+        else
+        {
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) { lifetime = maxLifetime; return; }
+            if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) { lifetime = maxLifetime; return; }
         }
 
         // Side Movement
-        if (0 <= x + directionX && x + directionX < maxX &&
-            canMoveSideOnElement(oldElementArray[x + directionX, y]))
-        {
-            lifetime--;
-            move(x, y, x + directionX, y, currentElementArray);
-            return;
-        }
+        if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, directionX, 0)) { lifetime--; return; }
         // If we cannot move sideways, change direction
         else
         {

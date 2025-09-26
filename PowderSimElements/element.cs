@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Godot;
 
 public abstract class Element
@@ -20,25 +21,31 @@ public abstract class Element
         return elementWhereMovement == null;
     }
 
-    protected bool gravity(int x, int y, int maxY, Element[,] currentElementArray, Element[,] oldElementArray)
-	{
-		// returns true if gravity was applied, false if not. 
-		if (y + 1 >= maxY) { return false; }
+    protected bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+    {
+        int newX = x + movementX, newY = y + movementY;
 
-		if (canMoveDownOnElement(oldElementArray[x, y+1]))
-		{
-            move(x, y, x, y + 1, currentElementArray);
+        if (newX >= maxX || newX < 0 ||
+            newY >= maxY || newY < 0) return false;
+
+        if (
+                (movementY > 0 &&
+                canMoveDownOnElement(oldElementArray[x + movementX, y + movementY]))
+            ||
+                (movementY < 0 &&
+                canMoveUpOnElement(oldElementArray[newX, newY]))
+            ||
+                (movementY == 0 &&
+                canMoveSideOnElement(oldElementArray[x + movementX, y + movementY]))
+            )
+        {
+            currentElementArray[x, y] = currentElementArray[newX, newY];
+            currentElementArray[newX, newY] = this;
             return true;
-		}
-		return false;
-	}
+        }
 
-	protected void move(int current_x, int current_y, int next_x, int next_y, Element[,] currentElementArray)
-	{
-		// Swaps the current cell with the next cell (can be null)
-        (currentElementArray[next_x, next_y], currentElementArray[current_x, current_y]) = (currentElementArray[current_x, current_y], currentElementArray[next_x, next_y]);
-	}
-
+        return false;
+    }
     abstract public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY);
 
 }
