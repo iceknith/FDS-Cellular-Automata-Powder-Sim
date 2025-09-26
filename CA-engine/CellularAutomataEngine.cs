@@ -18,7 +18,7 @@ public partial class CellularAutomataEngine : Node2D
 	[Export]
 	public Vector2 cellSize { get; set; } = new Vector2(8, 8);
 	[Export]
-	public Vector2 gridSize { get; set; } = new Vector2(240, 135);
+	public Vector2 gridSize { get; set; } = new Vector2(144, 81);
 
 	// --- Mathods --- //
 	public override void _Ready()

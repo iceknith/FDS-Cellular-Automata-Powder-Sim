@@ -19,43 +19,36 @@ public class Powder : Element
 		if (y + 1 >= maxY) return;
 
 		// Down movement
-		if (oldElementArray[x, y + 1] == null)
-		{
-			currentElementArray[x, y] = null;
-			currentElementArray[x, y + 1] = this;
-			return;
-		}
+		base.gravity(x, y, maxY, currentElementArray, oldElementArray);
 
-		// Left and Right movement possible
+		// Diag Left and Diag Right movement possible
 		if (x + 1 < maxX && oldElementArray[x + 1, y + 1] == null && 0 <= x - 1 && oldElementArray[x - 1, y + 1] == null)
 		{
-			currentElementArray[x, y] = null;
+			
 			RandomNumberGenerator rng = new();
 			if (rng.RandiRange(0, 1) == 0)
 			{
-				currentElementArray[x + 1, y + 1] = this;
+				base.move(x, y, x + 1, y + 1, currentElementArray);
 			}
 			else
 			{
-				currentElementArray[x - 1, y + 1] = this;
+				base.move(x, y, x - 1, y + 1, currentElementArray);
 			}
 
 			return;
 		}
 
-		// Left movement
+		// Diag Left movement
 		if (0 <= x - 1 && oldElementArray[x - 1, y + 1] == null)
 		{
-			currentElementArray[x, y] = null;
-			currentElementArray[x - 1, y + 1] = this;
+			base.move(x, y, x - 1, y + 1, currentElementArray);
 			return;
 		}
 
-		// Right movement
+		// Diag Right movement
 		if (x + 1 < maxX && oldElementArray[x + 1, y + 1] == null)
 		{
-			currentElementArray[x, y] = null;
-			currentElementArray[x + 1, y + 1] = this;
+			base.move(x, y, x + 1, y + 1, currentElementArray);
 			return;
 		}
 	}

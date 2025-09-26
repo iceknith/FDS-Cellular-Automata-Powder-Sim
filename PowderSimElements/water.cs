@@ -4,7 +4,7 @@ public class Water : Liquid
 {
 	public Water()
 	{
-		density = 2;
+		density = 5;
 		color = Colors.Blue;
 	}
 }
