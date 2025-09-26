@@ -18,7 +18,7 @@ public abstract class Element
 
     protected bool canMoveSideOnElement(Element elementWhereMovement)
     {
-        return elementWhereMovement == null;
+        return elementWhereMovement == null || elementWhereMovement.density < density;
     }
 
     protected bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
