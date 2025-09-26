@@ -1,39 +1,50 @@
+using System;
 using Godot;
 
 public class Powder : Element
 {
-
-    public bool wet { get; set; }
-
+	RandomNumberGenerator rng = new();
+	private float wetness;
+	public float Wetness   // property
+	{
+		get { return wetness; }   // get method
+		set { wetness = Math.Clamp(value, 0, 1); }  // set method
+	}
+        
     override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
     {
-        if (currentElementArray[x, y] != this) return;
-            // Return if a movement has already been done
+        if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
+        if (y + 1 >= maxY) return; // Return if we are on the bottom of the array
 
-        if (y + 1 >= maxY) return;
+		// Down movement
+        gravity(x, y, maxY, currentElementArray, oldElementArray);
 
-        // Down movement
-        if (canMoveDownOnElement(oldElementArray[x, y+1]))
-        {
-            currentElementArray[x, y] = currentElementArray[x, y+1];
-            currentElementArray[x, y + 1] = this;
-            return;
-        }
-        
-        // Left Down movement
-        if (0 <= x - 1 && canMoveDownOnElement(oldElementArray[x - 1, y + 1]))
-        {
-            currentElementArray[x, y] = currentElementArray[x - 1, y + 1];
-            currentElementArray[x - 1, y + 1] = this;
-            return;
-        }
-        
-        // Right Down movement
-        if (x + 1 < maxX && canMoveDownOnElement(oldElementArray[x + 1, y + 1]))
-        {
-            currentElementArray[x, y] = currentElementArray[x + 1, y + 1];
-            currentElementArray[x + 1, y + 1] = this;
-            return;
-        }
-    }
+		// Diag Left and Diag Right movement possible
+		if (x+1 < maxX && canMoveDownOnElement(oldElementArray[x+1, y+1]) && 0 <= x-1 && canMoveDownOnElement(oldElementArray[x+1, y+1]))
+		{
+			if (rng.RandiRange(0, 1) == 0)
+			{
+				move(x, y, x+1, y+1, currentElementArray);
+			}
+			else
+			{
+				move(x, y, x-1, y+1, currentElementArray);
+			}
+			return;
+		}
+
+		// Diag Right movement
+		if (0 <= x-1 && canMoveDownOnElement(oldElementArray[x-1, y+1]))
+		{
+			move(x, y, x-1, y+1, currentElementArray);
+			return;
+		}
+
+		// Diag Left movement
+		if (x+1 < maxX && canMoveDownOnElement(oldElementArray[x+1, y+1]))
+		{
+			move(x, y, x+1, y+1, currentElementArray);
+			return;
+		}
+	}
 }
