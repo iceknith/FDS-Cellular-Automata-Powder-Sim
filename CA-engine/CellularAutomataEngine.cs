@@ -87,10 +87,11 @@ public partial class CellularAutomataEngine : Node2D
 			CellUpdateHandler();
 		}
 
-		float totalWetness = GetTotalWetness();
-		GD.Print($"Total wetness in simulation: {totalWetness:F3}");
+        // Commented code to prevent stuff
+		//float totalWetness = GetTotalWetness();
+        //GD.Print($"Total wetness in simulation: {totalWetness:F3}");
 
-		QueueRedraw();
+        QueueRedraw();
 	}
 
 	//Those inputs may be ignored by filters
@@ -191,22 +192,27 @@ public partial class CellularAutomataEngine : Node2D
 	{
 		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
 	}
+    
+    private void createElement(int x, int y, string elementType, string state)
+	{
+		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType), state);
+	}
 
 	private void CellUpdateHandler()
-	{
-		Element[,] oldElementArray = (Element[,])elementArray.Clone();
+    {
+        Element[,] oldElementArray = (Element[,])elementArray.Clone();
 
-		for (int x = 0; x < gridWidth; x++)
-		{
-			for (int y = 0; y < gridHeight; y++)
-			{
-				if (oldElementArray[x, y] != null)
-				{
-					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
-				}
-			}
-		}
-	}
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                if (oldElementArray[x, y] != null)
+                {
+                    oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
+                }
+            }
+        }
+    }
 
 
 
@@ -222,8 +228,16 @@ public partial class CellularAutomataEngine : Node2D
 			{
 				for (int y = 0; y < gridHeight; y++)
 				{
-					if (elementArray[x, y] != null) writer.Write(elementArray[x, y].GetType() + " ");
-					else writer.Write("- ");
+                    if (elementArray[x, y] != null)
+                    {
+                        // Write element and state (if exists)
+                        string elementStoredText = elementArray[x, y].GetType().ToString();
+                        string elementState = elementArray[x, y].getState();
+                        if (elementState != null) elementStoredText += "|" + elementState;
+                        elementStoredText += " ";
+                        writer.Write(elementStoredText);
+                    }
+                    else writer.Write("- ");
 				}
 				writer.Write("\n");
 			}
@@ -260,8 +274,17 @@ public partial class CellularAutomataEngine : Node2D
 					throw new DataException("The file doesn't have the correct amount of lines on row " + x + " : " + line.Length + " instead of " + gridHeight);
 				for (int y = 0; y < gridHeight; y++)
 				{
-					// If element non null
-					if (line[y] != "-") createElement(x, y, line[y]);
+                    // If element non null
+                    if (line[y] != "-")
+                    {
+                        // If has state
+                        if (line[y].Contains("|"))
+                        {
+                            string[] storedElement = line[y].Split("|");
+                            createElement(x, y, storedElement[0], storedElement[1]);
+                        }
+                        else createElement(x, y, line[y]);
+                    }
 				}
 			}
 		}

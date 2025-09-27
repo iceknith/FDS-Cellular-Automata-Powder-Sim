@@ -21,15 +21,26 @@ public class Soil : Powder
 		density = 10;
 		color = baseColor;
 		flammability = 0;
-		nutrient = 0.0f;
 		wetness = 0.0f;
+		nutrient = 0.0f;
+	}
+
+	public Soil(string state)
+	{
+		density = 10;
+		color = baseColor;
+		flammability = 0;
+
+		string[] stateArgs = state.Split(";", false);
+		wetness = stateArgs[0].ToFloat();
+		nutrient = stateArgs[1].ToFloat();
 	}
 
 	private void updateColor()
 	{
 		Color nutriHue = baseColor.Lerp(richColor, Math.Min(nutrient, 2)); // more nutrient = darker color
 		Color wetHue = baseColor.Lerp(wetColor, wetness); // more wet = darker color
-		
+
 		color = nutriHue.Lerp(wetHue, 0.5f); // blend both effects TODO: adjust colors
 	}
 
@@ -45,9 +56,9 @@ public class Soil : Powder
 				{
 					continue;
 				}
-				if (oldElementArray[nx, ny] is Soil soil) 
+				if (oldElementArray[nx, ny] is Soil soil)
 				{
-					float nutriDiff = soil.nutrient - nutrient; 
+					float nutriDiff = soil.nutrient - nutrient;
 					soil.nutrient -= nutriDiff / 2;
 					nutrient += nutriDiff / 2;
 				}
@@ -61,7 +72,7 @@ public class Soil : Powder
 			{
 				int neighborX = x + dx;
 				int neighborY = y + dy;
-				
+
 				if (neighborX >= 0 && neighborX < maxX && neighborY >= 0 && neighborY < maxY)
 				{
 					if (oldElementArray[neighborX, neighborY] is Soil neighborSoil)
@@ -71,7 +82,7 @@ public class Soil : Powder
 						{
 							float transferAmount = wetnessDiff * 0.1f; // Slower transfer rate
 							float maxTransfer = Math.Min(transferAmount, wetness * 0.3f); // Limit how much can be transferred
-							
+
 							wetness -= maxTransfer;
 							neighborSoil.wetness += maxTransfer;
 						}
@@ -97,7 +108,12 @@ public class Soil : Powder
 		}
 
 		updateColor();
-	
+
 		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
 	}
+	
+	override public string getState()
+    {
+        return wetness + ";" + nutrient;
+    }
 }
