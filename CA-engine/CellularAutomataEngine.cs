@@ -1,8 +1,10 @@
 using Godot;
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
-
+using Godot.Collections;
+using static Godot.GD;
 public partial class CellularAutomataEngine : Node2D
 {
 
@@ -13,6 +15,15 @@ public partial class CellularAutomataEngine : Node2D
 	private int gridWidth;
 	private int gridHeight;
 
+	private enum DrawinState
+	{
+		None,
+		Drawing,
+		Erasing
+	}
+
+	private DrawinState drawinState = DrawinState.None;
+    
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently
 
@@ -85,6 +96,44 @@ public partial class CellularAutomataEngine : Node2D
 		
 		QueueRedraw();
 	}
+	
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton { Pressed: true } eventMouseButton)
+		{
+			switch (eventMouseButton.ButtonIndex)
+			{
+				case MouseButton.Left:
+					drawinState = DrawinState.Drawing;
+					break;
+				case MouseButton.Right:
+					drawinState = DrawinState.Erasing;
+					break;
+			}
+		}
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton { Pressed: false } eventMouseButton)
+		{
+			switch (eventMouseButton.ButtonIndex)
+			{
+				case MouseButton.Left:
+					if (drawinState == DrawinState.Drawing)
+					{
+						drawinState = DrawinState.None;
+					}
+					break;
+				case MouseButton.Right:
+					if (drawinState == DrawinState.Erasing)
+					{
+						drawinState = DrawinState.None;
+					}
+					break;
+			}
+		}
+	}
 
 	private void UiHandler() {
 		foreach (BaseButton button in buttonGroup.GetButtons())
@@ -103,7 +152,7 @@ public partial class CellularAutomataEngine : Node2D
 	private void PlacementHandler()
 	{
 
-		if (Input.IsActionPressed("LeftClick"))
+		if (drawinState != DrawinState.None)
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
 			int xStart = Math.Clamp((int)pos.X - brushSize/2, 0, gridWidth);
@@ -115,9 +164,14 @@ public partial class CellularAutomataEngine : Node2D
 			{
 				for (int y = yStart; y < yStop; y++)
 				{
+					if (drawinState == DrawinState.Erasing)
+					{
+						elementArray[x, y] = null;
+						continue;
+					}
 					switch (selectedElement) // ugly but was the only thing on my mind
 					{
-						
+
 						case "Nutrient":
 							if (elementArray[x,y] is Soil soil)
 							{
@@ -126,9 +180,8 @@ public partial class CellularAutomataEngine : Node2D
 							break;
 
 						default:
-				   			createElement(x, y, selectedElement);
+							createElement(x, y, selectedElement);
 							break;
-
 					}
 				}
 			}
