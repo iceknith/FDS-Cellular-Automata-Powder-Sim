@@ -23,21 +23,26 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="Label" type="Label" parent="Control"]
+[node name="FPS" type="Label" parent="Control"]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
 text = "100"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control"]
-layout_mode = 2
-
-[node name="ElementContainer" type="VBoxContainer" parent="Control/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="Sand" type="Button" parent="Control/HBoxContainer/ElementContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="ElementContainer" type="VBoxContainer" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="Sand" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 toggle_mode = true
@@ -60,7 +65,7 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "NUTRIENT"
 metadata/element = "Nutrient"
 
-[node name="Water" type="Button" parent="Control/HBoxContainer/ElementContainer"]
+[node name="Water" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
@@ -68,39 +73,36 @@ text = "WATER
 "
 metadata/element = "Water"
 
-[node name="Oil" type="Button" parent="Control/HBoxContainer/ElementContainer"]
+[node name="Oil" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
 text = "OIL"
 metadata/element = "Oil"
 
-[node name="Sliders" type="VBoxContainer" parent="Control/HBoxContainer"]
+[node name="Sliders" type="VBoxContainer" parent="Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_constants/separation = 0
 
-[node name="Label" type="Label" parent="Control/HBoxContainer/Sliders"]
+[node name="Label" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 layout_mode = 2
 text = "Brush size"
 
-[node name="BrushSize" type="HSlider" parent="Control/HBoxContainer/Sliders"]
+[node name="BrushSize" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 1.0
+max_value = 3.0
 rounded = true
 tick_count = 4
-ticks_position = 3
 
-[node name="Label2" type="Label" parent="Control/HBoxContainer/Sliders"]
+[node name="Label2" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 layout_mode = 2
 text = "Game speed"
 
-[node name="GameSpeed" type="HSlider" parent="Control/HBoxContainer/Sliders"]
+[node name="GameSpeed" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
@@ -109,4 +111,27 @@ value = 1.0
 rounded = true
 tick_count = 6
 ticks_on_borders = true
-ticks_position = 3
+
+[node name="HSeparator" type="HSeparator" parent="Control/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="SaveLoadContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Load" type="Button" parent="Control/VBoxContainer/SaveLoadContainer"]
+layout_mode = 2
+text = "Load"
+
+[node name="Save" type="Button" parent="Control/VBoxContainer/SaveLoadContainer"]
+layout_mode = 2
+text = "Save"
+
+[node name="FileDialog" type="FileDialog" parent="."]
+access = 2
+filters = PackedStringArray("*.gs")
+use_native_dialog = true
+
+[connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Load" to="." method="load_file"]
+[connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Save" to="." method="save_file"]
