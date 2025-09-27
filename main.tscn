@@ -80,9 +80,7 @@ text = "Brush size"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 1.0
+max_value = 3.0
 rounded = true
 tick_count = 4
 

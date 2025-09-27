@@ -106,18 +106,18 @@ public partial class CellularAutomataEngine : Node2D
 		if (Input.IsActionPressed("LeftClick"))
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-			int xStart = Math.Clamp((int)pos.X - brushSize-1, 0, gridWidth);
-			int xStop = Math.Clamp((int)pos.X + brushSize+1, 0, gridWidth);
-			int yStart = Math.Clamp((int)pos.Y - brushSize-1, 0, gridWidth);
-			int yStop = Math.Clamp((int)pos.Y + brushSize+1, 0, gridHeight);
+			int xStart = Math.Clamp((int)pos.X - brushSize/2, 0, gridWidth);
+			int xStop = Math.Clamp((int)pos.X + brushSize/2 + brushSize%2 + 1, 0, gridWidth);
+			int yStart = Math.Clamp((int)pos.Y - brushSize/2, 0, gridWidth);
+			int yStop = Math.Clamp((int)pos.Y + brushSize/2 + brushSize%2 +1, 0, gridHeight);
 
 			for (int x = xStart; x < xStop; x++)
-			{
-				for (int y = yStart; y < yStop; y++)
-				{
+            {
+                for (int y = yStart; y < yStop; y++)
+                {
                     createElement(x, y, selectedElement);
-				}
-			}
+                }
+            }
 		}
 	}
 
