@@ -7,8 +7,20 @@ public class Gas : Element
 	public RandomNumberGenerator rng = new();
 	public int cloudLineY = 10;
 
+	public bool sleeping = false;
+
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
+		if (sleeping)
+		{
+			sleeping = false;
+			return;
+		}
+		else
+		{
+			sleeping = true;
+		}
+		
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
 		int decision = rng.RandiRange(0, 3);
@@ -40,7 +52,7 @@ public class Gas : Element
 			}
 			else // if it doesn't move towards the cloud line, it has a small chance to move away from it
 			{
-				if (rng.Randf() > 0.5f)
+				if (rng.Randf() > 0.0f)
 				{
 					move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, -dir);
 				}

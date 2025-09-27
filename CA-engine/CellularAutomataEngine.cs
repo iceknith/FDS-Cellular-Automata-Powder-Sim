@@ -83,6 +83,9 @@ public partial class CellularAutomataEngine : Node2D
 			CellUpdateHandler();
 		}
 		
+		float totalWetness = GetTotalWetness();
+		GD.Print($"Total wetness in simulation: {totalWetness:F3}");
+		
 		QueueRedraw();
 	}
 
@@ -212,6 +215,24 @@ public partial class CellularAutomataEngine : Node2D
 				}
 			}
 		}
+	}
+
+	public float GetTotalWetness()
+	{
+		float totalWetness = 0f;
+		
+		for (int x = 0; x < gridWidth; x++)
+		{
+			for (int y = 0; y < gridHeight; y++)
+			{
+				if (elementArray[x, y] != null)
+				{
+					totalWetness += elementArray[x, y].wetness;
+				}
+			}
+		}
+		
+		return totalWetness;
 	}
 
 }

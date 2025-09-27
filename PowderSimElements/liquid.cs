@@ -5,12 +5,20 @@ public class Liquid : Element
     protected int directionX = 1;
     private int maxLifetime = 60 * 3;
 	private int lifetime;
-    private RandomNumberGenerator rng = new();
-
+    public RandomNumberGenerator rng = new();
     public Liquid()
     {
         lifetime = maxLifetime;
         directionX = 2 * rng.RandiRange(0, 1) - 1; // Random start direction
+    }
+
+    /// <summary>
+    /// Will trigger when the liquid tries to evaporates.
+    /// To override if needed.
+    /// </summary>
+    public virtual void onEvaporate(Element[,] currentElementArray, int x, int y)
+    {
+        currentElementArray[x, y] = null;
     }
 
     override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
@@ -19,7 +27,7 @@ public class Liquid : Element
 
         if (lifetime <= 0)
         {
-            currentElementArray[x, y] = null; // Delete the element
+            onEvaporate(currentElementArray, x, y);
             return;
         }
 
@@ -31,7 +39,7 @@ public class Liquid : Element
         {
             if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) { lifetime = maxLifetime; return; }
             if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) { lifetime = maxLifetime; return; }
-		}
+        }
         else
         {
             if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) { lifetime = maxLifetime; return; }

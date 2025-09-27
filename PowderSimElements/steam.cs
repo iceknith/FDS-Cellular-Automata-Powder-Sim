@@ -28,10 +28,8 @@ public class Steam : Gas
 					}
 				}
 			}
-			GD.Print(neighbourCount);
 			if (neighbourCount >= 3) // condensate only if there are many other steam particles around
 			{
-				GD.Print("Condensate");
 				currentElementArray[x, y] = new Water(); // condensate
 				return;
 			}

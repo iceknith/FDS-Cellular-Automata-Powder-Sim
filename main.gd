@@ -1,6 +1,6 @@
 extends Node
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	$Control/FPS.text = str(Engine.get_frames_per_second())
 
 func load_file():

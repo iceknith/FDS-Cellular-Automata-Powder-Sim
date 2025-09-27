@@ -1,48 +1,101 @@
 using Godot;
 using System;
+using System.Runtime.InteropServices;
 
 
 public class Soil : Powder
 {
-	private Color baseColor;
+	public (int, int)[] cardinals = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+	private Color baseColor = Color.FromHtml("#b58977");
+	private Color wetColor = Color.FromHtml("#302927ff");
+	private Color richColor = Color.FromHtml("#2c3d29ff");
 	private float _nutrient;
 	public float nutrient
 	{
 		get { return _nutrient; }   // get method
 		set { _nutrient = Math.Max(value, 0); }  // set method
 	}
+
 	public Soil()
 	{
 		density = 10;
-		color = Colors.DarkKhaki;
-		baseColor = color;
+		color = Color.FromHtml("#b58977");
 		flammability = 0;
-		nutrient = 0.0F;
+		nutrient = 0.0f;
+		wetness = 0.0f;
 	}
 
-	private void changeColor()
+	private void updateColor()
 	{
-		float colorChange = float.Lerp(1, 0, 1/(nutrient + 0.001F));
-		float clampedColorChange = Math.Clamp(colorChange, 0.15F, 0.8F);
-		color = baseColor.Darkened(clampedColorChange);
+		Color nutriHue = baseColor.Lerp(richColor, Math.Max(nutrient, 1));
+		Color wetHue = baseColor.Lerp(wetColor, wetness);
+		
+		color = nutriHue.Lerp(wetHue, 0.5f);
 	}
 
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
+
+		// Handle nutrient diffusion
 		for (int nx = Math.Max(0, x - 1); nx < Math.Min(x + 1, maxX); nx++)
 		{
 			for (int ny = Math.Max(0, y - 1); ny < Math.Min(y + 1, maxY); ny++)
 			{
-				if ((nx, ny) != (x, y) && oldElementArray[nx, ny] is Soil soil)
+				if ((nx, ny) == (x, y))
 				{
-					float diff = soil.nutrient - nutrient;
-					soil.nutrient -= diff / 2;
-					nutrient += diff / 2;
+					continue;
+				}
+				if (oldElementArray[nx, ny] is Soil soil)
+				{
+					float nutriDiff = soil.nutrient - nutrient;
+					soil.nutrient -= nutriDiff / 2;
+					nutrient += nutriDiff / 2;
 				}
 			}
 		}
 
-		changeColor();
+		// Handle wetness propagation (limited distance, cardinal directions only)
+		if (wetness > 0.3f) // Only propagate if we have significant wetness
+		{
+			foreach ((int dx, int dy) in cardinals)
+			{
+				int neighborX = x + dx;
+				int neighborY = y + dy;
+				
+				if (neighborX >= 0 && neighborX < maxX && neighborY >= 0 && neighborY < maxY)
+				{
+					if (oldElementArray[neighborX, neighborY] is Soil neighborSoil)
+					{
+						float wetnessDiff = wetness - neighborSoil.wetness;
+						if (wetnessDiff > 0.1f) // Only transfer if significant difference and if wetness greater than neighbor's
+						{
+							float transferAmount = wetnessDiff * 0.1f; // Slower transfer rate
+							float maxTransfer = Math.Min(transferAmount, wetness * 0.3f); // Limit how much can be transferred
+							
+							wetness -= maxTransfer;
+							neighborSoil.wetness += maxTransfer;
+						}
+					}
+				}
+			}
+		}
+
+		foreach ((int nx, int ny) in cardinals)
+		{
+			int neighborX = x + nx;
+			int neighborY = y + ny;
+			if (neighborX >= 0 && neighborX < maxX && neighborY >= 0 && neighborY < maxY)
+			{
+				if (oldElementArray[neighborX, neighborY] is Water water)
+				{
+					float wetnessCap = Math.Min(water.wetness, 1 - wetness);
+					water.wetness -= wetnessCap;
+					wetness += wetnessCap;
+				}
+			}
+		}
+
+		updateColor();
 	
 		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
 	}
