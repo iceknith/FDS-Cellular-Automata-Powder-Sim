@@ -1,8 +1,10 @@
 using Godot;
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
-
+using Godot.Collections;
+using static Godot.GD;
 public partial class CellularAutomataEngine : Node2D
 {
 
@@ -12,6 +14,8 @@ public partial class CellularAutomataEngine : Node2D
 	private int cellHeight;
 	private int gridWidth;
 	private int gridHeight;
+
+	private DrawingState _drawingState = DrawingState.None;
 
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently
@@ -82,14 +86,55 @@ public partial class CellularAutomataEngine : Node2D
 		{
 			CellUpdateHandler();
 		}
-		
+
 		float totalWetness = GetTotalWetness();
 		GD.Print($"Total wetness in simulation: {totalWetness:F3}");
-		
+
 		QueueRedraw();
 	}
 
-	private void UiHandler() {
+	//Those inputs may be ignored by filters
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton { Pressed: true } eventMouseButton)
+		{
+			switch (eventMouseButton.ButtonIndex)
+			{
+				case MouseButton.Left:
+					_drawingState = DrawingState.Drawing;
+					break;
+				case MouseButton.Right:
+					_drawingState = DrawingState.Erasing;
+					break;
+			}
+		}
+	}
+
+	//Those inputs are always called
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton { Pressed: false } eventMouseButton)
+		{
+			switch (eventMouseButton.ButtonIndex)
+			{
+				case MouseButton.Left:
+					if (_drawingState == DrawingState.Drawing)
+					{
+						_drawingState = DrawingState.None;
+					}
+					break;
+				case MouseButton.Right:
+					if (_drawingState == DrawingState.Erasing)
+					{
+						_drawingState = DrawingState.None;
+					}
+					break;
+			}
+		}
+	}
+
+	private void UiHandler()
+	{
 		foreach (BaseButton button in buttonGroup.GetButtons())
 		{
 			if (button.ButtonPressed)
@@ -106,32 +151,36 @@ public partial class CellularAutomataEngine : Node2D
 	private void PlacementHandler()
 	{
 
-		if (Input.IsActionPressed("LeftClick"))
+		if (_drawingState != DrawingState.None)
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-			int xStart = Math.Clamp((int)pos.X - brushSize/2, 0, gridWidth);
-			int xStop = Math.Clamp((int)pos.X + brushSize/2 + brushSize%2 + 1, 0, gridWidth);
-			int yStart = Math.Clamp((int)pos.Y - brushSize/2, 0, gridWidth);
-			int yStop = Math.Clamp((int)pos.Y + brushSize/2 + brushSize%2 +1, 0, gridHeight);
+			int xStart = Math.Clamp((int)pos.X - brushSize / 2, 0, gridWidth);
+			int xStop = Math.Clamp((int)pos.X + brushSize / 2 + brushSize % 2 + 1, 0, gridWidth);
+			int yStart = Math.Clamp((int)pos.Y - brushSize / 2, 0, gridWidth);
+			int yStop = Math.Clamp((int)pos.Y + brushSize / 2 + brushSize % 2 + 1, 0, gridHeight);
 
 			for (int x = xStart; x < xStop; x++)
 			{
 				for (int y = yStart; y < yStop; y++)
 				{
+					if (_drawingState == DrawingState.Erasing)
+					{
+						elementArray[x, y] = null;
+						continue;
+					}
 					switch (selectedElement) // ugly but was the only thing on my mind
 					{
-						
+
 						case "Nutrient":
-							if (elementArray[x,y] is Soil soil)
+							if (elementArray[x, y] is Soil soil)
 							{
 								soil.nutrient += 1.0F;
 							}
 							break;
 
 						default:
-				   			createElement(x, y, selectedElement);
+							createElement(x, y, selectedElement);
 							break;
-
 					}
 				}
 			}
@@ -145,7 +194,7 @@ public partial class CellularAutomataEngine : Node2D
 
 	private void CellUpdateHandler()
 	{
-		Element[,] oldElementArray = (Element[,]) elementArray.Clone();
+		Element[,] oldElementArray = (Element[,])elementArray.Clone();
 
 		for (int x = 0; x < gridWidth; x++)
 		{
@@ -183,7 +232,8 @@ public partial class CellularAutomataEngine : Node2D
 
 	public void LoadGridFromFile(string fileName)
 	{
-		if (File.Exists(fileName)) {
+		if (File.Exists(fileName))
+		{
 			// Store each line in array of strings
 			string[] lines = File.ReadAllLines(fileName);
 
@@ -205,7 +255,7 @@ public partial class CellularAutomataEngine : Node2D
 
 			for (int x = 0; x < gridWidth; x++)
 			{
-				string[] line = lines[x +1].Split(" ", false);
+				string[] line = lines[x + 1].Split(" ", false);
 				if (line.Length < gridHeight)
 					throw new DataException("The file doesn't have the correct amount of lines on row " + x + " : " + line.Length + " instead of " + gridHeight);
 				for (int y = 0; y < gridHeight; y++)
@@ -220,7 +270,7 @@ public partial class CellularAutomataEngine : Node2D
 	public float GetTotalWetness()
 	{
 		float totalWetness = 0f;
-		
+
 		for (int x = 0; x < gridWidth; x++)
 		{
 			for (int y = 0; y < gridHeight; y++)
@@ -231,8 +281,15 @@ public partial class CellularAutomataEngine : Node2D
 				}
 			}
 		}
-		
+
 		return totalWetness;
+	}
+	
+	private enum DrawingState
+	{
+		None,
+		Drawing,
+		Erasing
 	}
 
 }
