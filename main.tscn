@@ -93,30 +93,36 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_constants/separation = 0
 
-[node name="Label" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+[node name="BrushSizeLabel" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 1
 text = "Brush size"
 
 [node name="BrushSize" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-max_value = 3.0
-rounded = true
-tick_count = 4
+min_value = 1.0
+max_value = 5.0
+value = 1.0
+tick_count = 6
 
-[node name="Label2" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+[node name="GameSpeedLabel" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Game speed"
+size_flags_horizontal = 4
+text = "Game Speed : 1"
 
 [node name="GameSpeed" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
-max_value = 5.0
+max_value = 15.0
 value = 1.0
 rounded = true
-tick_count = 6
+tick_count = 11
 ticks_on_borders = true
 
 [node name="HSeparator" type="HSeparator" parent="Control/VBoxContainer"]
@@ -140,5 +146,7 @@ access = 2
 filters = PackedStringArray("*.gs")
 use_native_dialog = true
 
+[connection signal="value_changed" from="Control/VBoxContainer/HBoxContainer/Sliders/BrushSize" to="." method="_on_brush_size_value_changed"]
+[connection signal="value_changed" from="Control/VBoxContainer/HBoxContainer/Sliders/GameSpeed" to="." method="_on_game_speed_value_changed"]
 [connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Load" to="." method="load_file"]
 [connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Save" to="." method="save_file"]

@@ -2,6 +2,7 @@ extends Node
 
 func _process(_delta: float) -> void:
 	$Control/FPS.text = str(Engine.get_frames_per_second())
+	%BrushSizeLabel.text = ""
 
 func load_file():
 	$FileDialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -21,3 +22,11 @@ func save_file():
 		$FileDialog.file_selected.disconnect(connection.callable)
 	# Connect new signal
 	$FileDialog.file_selected.connect($CellularAutomataEngine.SaveGridToFile)
+
+
+func _on_brush_size_value_changed(value: float) -> void:
+	%BrushSizeLabel.text = "Brush Size : " + str(%BrushSize.value)
+
+
+func _on_game_speed_value_changed(value: float) -> void:
+	%GameSpeedLabel.text = "Game Speed : " + str(%GameSpeed.value)
