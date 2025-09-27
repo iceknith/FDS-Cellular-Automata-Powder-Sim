@@ -15,14 +15,7 @@ public partial class CellularAutomataEngine : Node2D
 	private int gridWidth;
 	private int gridHeight;
 
-	private enum DrawinState
-	{
-		None,
-		Drawing,
-		Erasing
-	}
-
-	private DrawinState drawinState = DrawinState.None;
+	private DrawingState _drawingState = DrawingState.None;
     
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently
@@ -97,6 +90,7 @@ public partial class CellularAutomataEngine : Node2D
 		QueueRedraw();
 	}
 	
+	//Those inputs may be ignored by filters
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton { Pressed: true } eventMouseButton)
@@ -104,15 +98,16 @@ public partial class CellularAutomataEngine : Node2D
 			switch (eventMouseButton.ButtonIndex)
 			{
 				case MouseButton.Left:
-					drawinState = DrawinState.Drawing;
+					_drawingState = DrawingState.Drawing;
 					break;
 				case MouseButton.Right:
-					drawinState = DrawinState.Erasing;
+					_drawingState = DrawingState.Erasing;
 					break;
 			}
 		}
 	}
 
+	//Those inputs are always called
 	public override void _Input(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton { Pressed: false } eventMouseButton)
@@ -120,15 +115,15 @@ public partial class CellularAutomataEngine : Node2D
 			switch (eventMouseButton.ButtonIndex)
 			{
 				case MouseButton.Left:
-					if (drawinState == DrawinState.Drawing)
+					if (_drawingState == DrawingState.Drawing)
 					{
-						drawinState = DrawinState.None;
+						_drawingState = DrawingState.None;
 					}
 					break;
 				case MouseButton.Right:
-					if (drawinState == DrawinState.Erasing)
+					if (_drawingState == DrawingState.Erasing)
 					{
-						drawinState = DrawinState.None;
+						_drawingState = DrawingState.None;
 					}
 					break;
 			}
@@ -152,7 +147,7 @@ public partial class CellularAutomataEngine : Node2D
 	private void PlacementHandler()
 	{
 
-		if (drawinState != DrawinState.None)
+		if (_drawingState != DrawingState.None)
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
 			int xStart = Math.Clamp((int)pos.X - brushSize/2, 0, gridWidth);
@@ -164,7 +159,7 @@ public partial class CellularAutomataEngine : Node2D
 			{
 				for (int y = yStart; y < yStop; y++)
 				{
-					if (drawinState == DrawinState.Erasing)
+					if (_drawingState == DrawingState.Erasing)
 					{
 						elementArray[x, y] = null;
 						continue;
@@ -267,4 +262,10 @@ public partial class CellularAutomataEngine : Node2D
 		}
 	}
 
+	private enum DrawingState
+	{
+		None,
+		Drawing,
+		Erasing
+	}
 }
