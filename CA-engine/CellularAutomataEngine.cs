@@ -120,6 +120,10 @@ public partial class CellularAutomataEngine : Node2D
 						case "Sand":
 							elementArray[x,y] = new Sand();
 							break;
+						
+						case "Soil":
+							elementArray[x,y] = new Soil();
+							break;
 
 						case "Water":
 							elementArray[x,y] = new Water();
@@ -127,6 +131,13 @@ public partial class CellularAutomataEngine : Node2D
 
 						case "Oil":
 							elementArray[x,y] = new Oil();
+							break;
+						
+						case "Nutrient":
+							if (elementArray[x,y] is Soil soil)
+							{
+								soil.nutrient += 1.0F;
+							}
 							break;
 
 						default:

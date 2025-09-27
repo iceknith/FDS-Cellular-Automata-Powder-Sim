@@ -6,5 +6,6 @@ public class Water : Liquid
 	{
 		density = 5;
 		color = Colors.Blue;
+		flammability = 0;
 	}
 }

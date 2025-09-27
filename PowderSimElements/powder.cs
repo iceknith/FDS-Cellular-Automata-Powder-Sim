@@ -4,12 +4,6 @@ using Godot;
 public class Powder : Element
 {
 	RandomNumberGenerator rng = new();
-	private float wetness;
-	public float Wetness   // property
-	{
-		get { return wetness; }   // get method
-		set { wetness = Math.Clamp(value, 0, 1); }  // set method
-	}
 		
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{

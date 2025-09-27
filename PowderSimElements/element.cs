@@ -1,10 +1,18 @@
-using System.Runtime.CompilerServices;
+using System;
 using Godot;
 
 public abstract class Element
 {
 	public Color color { get; protected set; }
 	public double density { get; protected set; }
+	public double flammability { get; protected set; }
+	private float _wetness; 
+	public float wetness
+	{
+		get { return _wetness; }   // get method
+		set { _wetness = Math.Clamp(value, 0, 1); }  // set method
+	}
+
 
 	protected bool canMoveDownOnElement(Element elementWhereMovement)
 	{
