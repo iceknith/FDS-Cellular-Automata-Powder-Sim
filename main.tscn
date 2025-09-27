@@ -51,14 +51,14 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "SAND"
 metadata/element = "Sand"
 
-[node name="Soil" type="Button" parent="Control/HBoxContainer/ElementContainer"]
+[node name="Soil" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
 text = "SOIL"
 metadata/element = "Soil"
 
-[node name="Nutrient" type="Button" parent="Control/HBoxContainer/ElementContainer"]
+[node name="Nutrient" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
