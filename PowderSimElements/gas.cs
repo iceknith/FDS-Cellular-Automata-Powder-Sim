@@ -4,12 +4,11 @@ using Godot;
 
 public class Gas : Element
 {
-	public RandomNumberGenerator rng = new();
 	public int cloudLineY = 10;
 
 	public bool sleeping = false;
 
-	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (sleeping)
 		{
@@ -20,7 +19,7 @@ public class Gas : Element
 		{
 			sleeping = true;
 		}
-		
+
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
 		int decision = rng.RandiRange(0, 3);
@@ -61,5 +60,7 @@ public class Gas : Element
 
 		}
 
+		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
+		updateColor(T);
 	}
 }

@@ -15,7 +15,17 @@ public class Water : Liquid
         currentElementArray[x, y] = new Steam(); // evaporate into steam
     }
 
-    public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+    public override void ignite(Element[,] currentElementArray, int x, int y)
+    {
+        if (currentElementArray[x, y] == this)
+        {
+            currentElementArray[x, y] = new Steam(); // water turns to steam when ignited
+        }
+        base.ignite(currentElementArray, x, y);
+    }
+
+
+    public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
     {
         if (wetness <= 0 && currentElementArray[x, y] == this) // disappear if completely dry (dry water is not water) 
         {
@@ -23,13 +33,13 @@ public class Water : Liquid
             return;
         }
 
-        if (rng.Randf() < 0.002f && y - 1 > 0 && oldElementArray[x, y - 1] == null) // can add water to the system if wetness < 1
+        if (rng.Randf() < 0.001f && y - 1 > 0 && oldElementArray[x, y - 1] == null) // can add water to the system if wetness < 1
         {
             onEvaporate(currentElementArray, x, y);
             return;
         }
 
-        base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
+        base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T); // keep at the end because of returns contained in base method
     }
 
 }

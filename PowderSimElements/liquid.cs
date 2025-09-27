@@ -6,7 +6,6 @@ public class Liquid : Element
 	protected int directionX = 1;
 	private int maxLifetime = 60 * 3;
 	private int lifetime;
-	public RandomNumberGenerator rng = new();
 	public Liquid()
 	{
 		lifetime = maxLifetime;
@@ -19,15 +18,17 @@ public class Liquid : Element
 	/// </summary>
 	public virtual void onEvaporate(Element[,] currentElementArray, int x, int y)
 	{
+		if (currentElementArray[x, y] != this) return;
 		currentElementArray[x, y] = null;
 	}
 
-	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
 		// evaporate if lifetime is over and we are not above another liquid or at the bottom
 		if (lifetime <= 0
+		&& !burning
 		&& (y - 1 == maxY
 		|| (y + 2 < maxY
 		&& currentElementArray[x, y + 1] is not Liquid
@@ -52,7 +53,7 @@ public class Liquid : Element
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) { lifetime = maxLifetime; return; }
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) { lifetime = maxLifetime; return; }
 		}
-		
+
 		if (randomFloat < 0.1f) // small chance to change direction randomly
 		{
 			directionX *= -1;
@@ -65,5 +66,9 @@ public class Liquid : Element
 		{
 			directionX *= -1;
 		}
+
+
+		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
+		updateColor(T);
 	}
 }

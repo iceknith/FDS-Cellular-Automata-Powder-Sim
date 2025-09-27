@@ -1,11 +1,6 @@
-using System;
-using Godot;
-
 public class Powder : Element
 {
-	RandomNumberGenerator rng = new();
-		
-	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
@@ -13,7 +8,7 @@ public class Powder : Element
 		if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) return;
 
 		// Diag movements
-		if (rng.RandiRange(0, 1) == 0)
+		if (T % 2 == 0)
 		{
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) return;
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) return;
@@ -23,5 +18,8 @@ public class Powder : Element
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 1)) return;
 			if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 1)) return;
 		}
+	
+		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
+		updateColor(T);
 	}
 }

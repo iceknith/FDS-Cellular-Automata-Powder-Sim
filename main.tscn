@@ -58,6 +58,13 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "SOIL"
 metadata/element = "Soil"
 
+[node name="Fire" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "FIRE"
+metadata/element = "Fire"
+
 [node name="Nutrient" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
@@ -140,6 +147,12 @@ text = "Load"
 [node name="Save" type="Button" parent="Control/VBoxContainer/SaveLoadContainer"]
 layout_mode = 2
 text = "Save"
+
+[node name="InspectLabel" type="Label" parent="Control"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2

@@ -1,17 +1,16 @@
 using Godot;
 using System;
-using System.Runtime.InteropServices;
 public class Steam : Gas
 {
 	public Steam() : base()
 	{
 		density = 1;
-		color = Colors.Gray;
+		color = Colors.WhiteSmoke;
 		flammability = 0;
 		wetness = 1.0f;
 	}
 
-	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 
 		// Move up if possible
@@ -38,6 +37,6 @@ public class Steam : Gas
 			}
 		}
 
-		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
+		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T); // keep at the end because of returns contained in base method
 	}
 }

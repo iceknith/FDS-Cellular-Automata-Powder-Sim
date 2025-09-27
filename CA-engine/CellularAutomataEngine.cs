@@ -26,6 +26,8 @@ public partial class CellularAutomataEngine : Node2D
 	private Slider brushSizeSlider;
 	public int brushSize = 1;
 
+	public int tick = 0;
+
 
 	// --- Public (exported) element instantiation --- //
 	[ExportCategory("Simulation Size")]
@@ -79,6 +81,8 @@ public partial class CellularAutomataEngine : Node2D
 
 	public override void _Process(double delta)
 	{
+
+		tick ++;
 		base._Process(delta);
 		UiHandler();
 		PlacementHandler();
@@ -130,6 +134,10 @@ public partial class CellularAutomataEngine : Node2D
 						_drawingState = DrawingState.None;
 					}
 					break;
+				case MouseButton.Middle:
+					string cellInfo = GetCellInfoAtCursor();
+					GD.Print(cellInfo);
+					break;
 			}
 		}
 	}
@@ -147,6 +155,8 @@ public partial class CellularAutomataEngine : Node2D
 
 		gameSpeed = (int)gameSpeedSlider.Value;
 		brushSize = (int)brushSizeSlider.Value;
+
+		((Label)GetNode("%InspectLabel")).Text = GetCellInfoAtCursor();
 	}
 
 	private void PlacementHandler()
@@ -178,6 +188,10 @@ public partial class CellularAutomataEngine : Node2D
 								soil.nutrient += 1.0F;
 							}
 							break;
+						
+						case "Fire":
+							elementArray[x, y]?.ignite(elementArray, x, y);
+							break;
 
 						default:
 							createElement(x, y, selectedElement);
@@ -187,7 +201,6 @@ public partial class CellularAutomataEngine : Node2D
 			}
 		}
 	}
-
 	private void createElement(int x, int y, string elementType)
 	{
 		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
@@ -208,7 +221,7 @@ public partial class CellularAutomataEngine : Node2D
 			{
 				if (oldElementArray[x, y] != null)
 				{
-					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
+					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight, tick);
 				}
 			}
 		}
@@ -288,6 +301,50 @@ public partial class CellularAutomataEngine : Node2D
 				}
 			}
 		}
+	}
+
+	public string GetCellInfoAtCursor()
+	{
+		Vector2 mousePos = GetViewport().GetMousePosition();
+		Vector2 gridPos = mousePos / cellSize;
+		
+		int x = (int)gridPos.X;
+		int y = (int)gridPos.Y;
+		
+		// Check if cursor is within grid bounds
+		if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight)
+		{
+			return "Cursor outside grid bounds";
+		}
+		
+		Element cell = elementArray[x, y];
+		
+		if (cell == null)
+		{
+			return $"Position ({x}, {y}): Empty cell";
+		}
+		
+		// Get the class name
+		string className = cell.GetType().Name;
+		
+		// Build attribute string
+		string attributes = $"Position ({x}, {y}): {className}\n";
+		attributes += $"  Flammability: {cell.flammability}\n";
+		attributes += $"  Wetness: {cell.wetness:F3}\n";
+		attributes += $"  Burning: {cell.burning}\n";
+		
+		if (cell.burning)
+		{
+			attributes += $"  Burning Lifetime: {cell.burningLifetime}\n";
+		}
+		
+		// Add specific attributes for different element types
+		if (cell is Soil soil)
+		{
+			attributes += $"  Nutrient: {soil.nutrient:F3}\n";
+		}
+		
+		return attributes.StripEdges();
 	}
 
 	public float GetTotalWetness()

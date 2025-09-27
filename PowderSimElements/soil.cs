@@ -36,15 +36,17 @@ public class Soil : Powder
 		nutrient = stateArgs[1].ToFloat();
 	}
 
-	private void updateColor()
+	override public void updateColor(int T)
 	{
+		base.updateColor(T);
+
 		Color nutriHue = baseColor.Lerp(richColor, Math.Min(nutrient, 2)); // more nutrient = darker color
 		Color wetHue = baseColor.Lerp(wetColor, wetness); // more wet = darker color
 
 		color = nutriHue.Lerp(wetHue, 0.5f); // blend both effects TODO: adjust colors
 	}
 
-	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 
 		// Handle nutrient diffusion (uniform in all directions)
@@ -107,13 +109,13 @@ public class Soil : Powder
 			}
 		}
 
-		updateColor();
+		updateColor(T);
 
-		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
+		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T); // keep at the end because of returns contained in base method
 	}
 	
 	override public string getState()
-    {
-        return wetness + ";" + nutrient;
-    }
+	{
+		return wetness + ";" + nutrient;
+	}
 }

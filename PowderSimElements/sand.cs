@@ -4,7 +4,7 @@ public class Sand : Powder
 {
 	public Sand()
 	{
-		density = 10;
+		density = 20;
 		color = Colors.Yellow;
 	}
 }
