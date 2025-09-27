@@ -38,13 +38,13 @@ public abstract class Element
 
 		if (
 				(movementY > 0 &&
-				canMoveDownOnElement(oldElementArray[x + movementX, y + movementY]))
+				canMoveDownOnElement(oldElementArray[newX, newY]))
 			||
 				(movementY < 0 &&
 				canMoveUpOnElement(oldElementArray[newX, newY]))
 			||
 				(movementY == 0 &&
-				canMoveSideOnElement(oldElementArray[x + movementX, y + movementY]))
+				canMoveSideOnElement(oldElementArray[newX, newY]))
 			)
 		{
 			currentElementArray[x, y] = currentElementArray[newX, newY];
