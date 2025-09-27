@@ -14,8 +14,13 @@ public partial class CellularAutomataEngine : Node2D
     private int gridHeight;
 
     private ButtonGroup buttonGroup;
-
     public string selectedElement; // TODO idk how to do differently
+
+	private Slider gameSpeedSlider;
+	public int gameSpeed = 1;
+
+	private Slider brushSizeSlider;
+	public int brushSize = 1;
 
 
     // --- Public (exported) element instantiation --- //
@@ -34,11 +39,14 @@ public partial class CellularAutomataEngine : Node2D
         gridWidth = (int)gridSize.X;
         gridHeight = (int)gridSize.Y;
 
-        Button firstButton = GetNode<Button>("../Control/ElementContainer/Sand"); // Change for a cleaner way of handling inputs
-        buttonGroup = firstButton.ButtonGroup;
+		Button firstButton = GetNode<Button>("%Sand");
+		buttonGroup = firstButton.ButtonGroup;
 
-        elementArray = new Element[gridWidth, gridHeight];
-    }
+		brushSizeSlider = GetNode<Slider>("%BrushSize");
+		gameSpeedSlider = GetNode<Slider>("%GameSpeed");
+
+		elementArray = new Element[gridWidth, gridHeight];
+	}
 
 
     public override void _Draw()
@@ -65,63 +73,79 @@ public partial class CellularAutomataEngine : Node2D
         }
     }
 
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-        PlacementHandler();
-        CellUpdateHandler();
+	public override void _Process(double delta)
+	{
+		base._Process(delta);
+		UiHandler();
+		PlacementHandler();
+		for (int _ = 0; _ < gameSpeed; _++) // game speed just skips steps
+		{
+			CellUpdateHandler();
+		}
+		
+		QueueRedraw();
+	}
 
-        QueueRedraw();
-    }
+	private void UiHandler() {
+		foreach (BaseButton button in buttonGroup.GetButtons())
+		{
+			if (button.ButtonPressed)
+			{
+				selectedElement = (string)button.GetMeta("element");
+				break;
+			}
+		}
 
-    private void PlacementHandler()
-    {
-        foreach (BaseButton button in buttonGroup.GetButtons())
-        {
-            if (button.ButtonPressed)
-            {
-                selectedElement = (string)button.GetMeta("element");
-                break;
-            }
-        }
+		gameSpeed = (int)gameSpeedSlider.Value;
+		brushSize = (int)brushSizeSlider.Value;
+	}
 
-        if (Input.IsActionPressed("LeftClick"))
-        {
-            Vector2 pos = GetViewport().GetMousePosition() / cellSize;
-            if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
-            {
-                createElement((int)pos.X, (int)pos.Y, selectedElement);
+	private void PlacementHandler()
+	{
 
-            }
-        }
-    }
+		if (Input.IsActionPressed("LeftClick"))
+		{
+			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
+			int xStart = Math.Clamp((int)pos.X - brushSize-1, 0, gridWidth);
+			int xStop = Math.Clamp((int)pos.X + brushSize+1, 0, gridWidth);
+			int yStart = Math.Clamp((int)pos.Y - brushSize-1, 0, gridWidth);
+			int yStop = Math.Clamp((int)pos.Y + brushSize+1, 0, gridHeight);
+
+			for (int x = xStart; x < xStop; x++)
+			{
+				for (int y = yStart; y < yStop; y++)
+				{
+                    createElement(x, y, selectedElement);
+				}
+			}
+		}
+	}
 
     private void createElement(int x, int y, string elementType)
     {
         elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
     }
 
-    private void CellUpdateHandler()
-    {
-        Element[,] oldElementArray = (Element[,])elementArray.Clone();
+	private void CellUpdateHandler()
+	{
+		Element[,] oldElementArray = (Element[,]) elementArray.Clone();
 
-        for (int x = 0; x < gridWidth; x++)
-        {
-            for (int y = 0; y < gridHeight; y++)
-            {
-                if (oldElementArray[x, y] != null)
-                {
-                    oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
-                }
-            }
-        }
-    }
+		for (int x = 0; x < gridWidth; x++)
+		{
+			for (int y = 0; y < gridHeight; y++)
+			{
+				if (oldElementArray[x, y] != null)
+				{
+					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
+				}
+			}
+		}
+	}
 
 
 
     public void SaveGridToFile(string fileName)
     {
-        GD.Print("heyyyy");
         using (StreamWriter writer = new StreamWriter(fileName))
         {
             // Write header line

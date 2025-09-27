@@ -11,32 +11,39 @@ script = ExtResource("1_0xm2m")
 
 [node name="CellularAutomataEngine" parent="." instance=ExtResource("2_0xm2m")]
 
-[node name="Control" type="Control" parent="."]
-layout_mode = 3
+[node name="Control" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_horizontal = 4
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="FPS" type="Label" parent="Control"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -38.0
-offset_bottom = 30.0
-grow_horizontal = 0
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
 text = "100"
 
-[node name="ElementContainer" type="VBoxContainer" parent="Control"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
-[node name="Sand" type="Button" parent="Control/ElementContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="ElementContainer" type="VBoxContainer" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="Sand" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 toggle_mode = true
 button_pressed = true
@@ -44,7 +51,7 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "SAND"
 metadata/element = "Sand"
 
-[node name="Water" type="Button" parent="Control/ElementContainer"]
+[node name="Water" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
@@ -52,35 +59,67 @@ text = "WATER
 "
 metadata/element = "Water"
 
-[node name="Oil" type="Button" parent="Control/ElementContainer"]
+[node name="Oil" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
 text = "OIL"
 metadata/element = "Oil"
 
-[node name="HSeparator" type="HSeparator" parent="Control/ElementContainer"]
+[node name="Sliders" type="VBoxContainer" parent="Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+layout_mode = 2
+text = "Brush size"
+
+[node name="BrushSize" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 20.0
+value = 1.0
+rounded = true
+tick_count = 4
+
+[node name="Label2" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+layout_mode = 2
+text = "Game speed"
+
+[node name="GameSpeed" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+max_value = 5.0
+value = 1.0
+rounded = true
+tick_count = 5
+ticks_on_borders = true
+
+[node name="HSeparator" type="HSeparator" parent="Control/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 25
 
-[node name="ButtonHContainer" type="HBoxContainer" parent="Control/ElementContainer"]
+[node name="SaveLoadContainer" type="HBoxContainer" parent="Control/VBoxContainer"]
 layout_mode = 2
+alignment = 1
 
-[node name="Load" type="Button" parent="Control/ElementContainer/ButtonHContainer"]
+[node name="Load" type="Button" parent="Control/VBoxContainer/SaveLoadContainer"]
 layout_mode = 2
 text = "Load"
 
-[node name="Save" type="Button" parent="Control/ElementContainer/ButtonHContainer"]
+[node name="Save" type="Button" parent="Control/VBoxContainer/SaveLoadContainer"]
 layout_mode = 2
 text = "Save"
-
-[node name="Label" type="Label" parent="Control/ElementContainer"]
-layout_mode = 2
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2
 filters = PackedStringArray("*.gs")
 use_native_dialog = true
 
-[connection signal="pressed" from="Control/ElementContainer/ButtonHContainer/Load" to="." method="load_file"]
-[connection signal="pressed" from="Control/ElementContainer/ButtonHContainer/Save" to="." method="save_file"]
+[connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Load" to="." method="load_file"]
+[connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Save" to="." method="save_file"]
