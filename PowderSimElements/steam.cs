@@ -8,6 +8,7 @@ public class Steam : Gas
 		density = 1;
 		color = Colors.Gray;
 		flammability = 0;
+		wetness = 1.0f;
 	}
 
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
@@ -28,6 +29,8 @@ public class Steam : Gas
 					}
 				}
 			}
+			// there is problems with the neighbour count being low because of particles moving, but it should be fine for now
+
 			if (neighbourCount >= 3) // condensate only if there are many other steam particles around
 			{
 				currentElementArray[x, y] = new Water(); // condensate

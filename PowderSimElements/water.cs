@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using Godot;
 
 public class Water : Liquid
@@ -13,12 +12,12 @@ public class Water : Liquid
 
 	public override void onEvaporate(Element[,] currentElementArray, int x, int y)
 	{
-		currentElementArray[x, y] = new Steam();
+		currentElementArray[x, y] = new Steam(); // evaporate into steam
 	}
 
     public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
     {
-		if (wetness <= 0)
+		if (wetness <= 0 && currentElementArray[x, y] == this) // disappear if completely dry (dry water is not water) 
 		{
 			currentElementArray[x, y] = null;
 			return;
@@ -30,7 +29,7 @@ public class Water : Liquid
 			return;
 		}
 
-        base.update(oldElementArray, currentElementArray, x, y, maxX, maxY);
+        base.update(oldElementArray, currentElementArray, x, y, maxX, maxY); // keep at the end because of returns contained in base method
     }
 
 }

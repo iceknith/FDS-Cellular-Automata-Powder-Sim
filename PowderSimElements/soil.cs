@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 public class Soil : Powder
 {
 	public (int, int)[] cardinals = [(0, 1), (1, 0), (0, -1), (-1, 0)];
-	private Color baseColor = Color.FromHtml("#b58977");
-	private Color wetColor = Color.FromHtml("#302927ff");
-	private Color richColor = Color.FromHtml("#2c3d29ff");
+	private Color baseColor = Color.FromHtml("#8d7267ff");
+	private Color wetColor = Color.FromHtml("#3a1008ff");
+	private Color richColor = Color.FromHtml("#394e35ff");
 	private float _nutrient;
 	public float nutrient
 	{
@@ -19,7 +19,7 @@ public class Soil : Powder
 	public Soil()
 	{
 		density = 10;
-		color = Color.FromHtml("#b58977");
+		color = baseColor;
 		flammability = 0;
 		nutrient = 0.0f;
 		wetness = 0.0f;
@@ -27,17 +27,17 @@ public class Soil : Powder
 
 	private void updateColor()
 	{
-		Color nutriHue = baseColor.Lerp(richColor, Math.Max(nutrient, 1));
-		Color wetHue = baseColor.Lerp(wetColor, wetness);
+		Color nutriHue = baseColor.Lerp(richColor, Math.Min(nutrient, 2)); // more nutrient = darker color
+		Color wetHue = baseColor.Lerp(wetColor, wetness); // more wet = darker color
 		
-		color = nutriHue.Lerp(wetHue, 0.5f);
+		color = nutriHue.Lerp(wetHue, 0.5f); // blend both effects TODO: adjust colors
 	}
 
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 
-		// Handle nutrient diffusion
-		for (int nx = Math.Max(0, x - 1); nx < Math.Min(x + 1, maxX); nx++)
+		// Handle nutrient diffusion (uniform in all directions)
+		for (int nx = Math.Max(0, x - 1); nx < Math.Min(x + 1, maxX); nx++) // including diagonals
 		{
 			for (int ny = Math.Max(0, y - 1); ny < Math.Min(y + 1, maxY); ny++)
 			{
@@ -45,9 +45,9 @@ public class Soil : Powder
 				{
 					continue;
 				}
-				if (oldElementArray[nx, ny] is Soil soil)
+				if (oldElementArray[nx, ny] is Soil soil) 
 				{
-					float nutriDiff = soil.nutrient - nutrient;
+					float nutriDiff = soil.nutrient - nutrient; 
 					soil.nutrient -= nutriDiff / 2;
 					nutrient += nutriDiff / 2;
 				}
@@ -80,6 +80,7 @@ public class Soil : Powder
 			}
 		}
 
+		// Handle water absorption from adjacent water elements
 		foreach ((int nx, int ny) in cardinals)
 		{
 			int neighborX = x + nx;
@@ -88,7 +89,7 @@ public class Soil : Powder
 			{
 				if (oldElementArray[neighborX, neighborY] is Water water)
 				{
-					float wetnessCap = Math.Min(water.wetness, 1 - wetness);
+					float wetnessCap = Math.Min(water.wetness, 1 - wetness); // only absorb what we can take
 					water.wetness -= wetnessCap;
 					wetness += wetnessCap;
 				}
