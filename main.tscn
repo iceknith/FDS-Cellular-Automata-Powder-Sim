@@ -21,7 +21,7 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="Control"]
+[node name="FPS" type="Label" parent="Control"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -58,3 +58,29 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_0xm2m")
 text = "OIL"
 metadata/element = "Oil"
+
+[node name="HSeparator" type="HSeparator" parent="Control/ElementContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="ButtonHContainer" type="HBoxContainer" parent="Control/ElementContainer"]
+layout_mode = 2
+
+[node name="Load" type="Button" parent="Control/ElementContainer/ButtonHContainer"]
+layout_mode = 2
+text = "Load"
+
+[node name="Save" type="Button" parent="Control/ElementContainer/ButtonHContainer"]
+layout_mode = 2
+text = "Save"
+
+[node name="Label" type="Label" parent="Control/ElementContainer"]
+layout_mode = 2
+
+[node name="FileDialog" type="FileDialog" parent="."]
+access = 2
+filters = PackedStringArray("*.gs")
+use_native_dialog = true
+
+[connection signal="pressed" from="Control/ElementContainer/ButtonHContainer/Load" to="." method="load_file"]
+[connection signal="pressed" from="Control/ElementContainer/ButtonHContainer/Save" to="." method="save_file"]

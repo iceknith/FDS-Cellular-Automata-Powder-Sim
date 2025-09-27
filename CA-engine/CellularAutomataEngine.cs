@@ -1,80 +1,80 @@
 using Godot;
 using System;
-using System.Text.RegularExpressions;
-using System.Threading;
+using System.Data;
+using System.IO;
 
 public partial class CellularAutomataEngine : Node2D
 {
 
-	// --- Private element instantiation --- //
-	private Element[,] elementArray;
-	private int cellWidth;
-	private int cellHeight;
-	private int gridWidth;
-	private int gridHeight;
+    // --- Private element instantiation --- //
+    private Element[,] elementArray;
+    private int cellWidth;
+    private int cellHeight;
+    private int gridWidth;
+    private int gridHeight;
 
-	private ButtonGroup buttonGroup;
+    private ButtonGroup buttonGroup;
 
-	public string selectedElement; // TODO idk how to do differently
-
-
-	// --- Public (exported) element instantiation --- //
-	[ExportCategory("Simulation Size")]
-	[Export]
-	public Vector2 cellSize { get; set; } = new Vector2(8, 8);
-	[Export]
-	public Vector2 gridSize { get; set; } = new Vector2(144, 81);
-
-	// --- Mathods --- //
-	public override void _Ready()
-	{
-		base._EnterTree();
-		cellWidth = (int)cellSize.X;
-		cellHeight = (int)cellSize.Y;
-		gridWidth = (int)gridSize.X;
-		gridHeight = (int)gridSize.Y;
-
-		Button firstButton = GetNode<Button>("../Control/ElementContainer/Sand");
-		buttonGroup = firstButton.ButtonGroup;
-
-		elementArray = new Element[gridWidth, gridHeight];
-	}
+    public string selectedElement; // TODO idk how to do differently
 
 
-	public override void _Draw()
-	{
-		base._Draw();
+    // --- Public (exported) element instantiation --- //
+    [ExportCategory("Simulation Size")]
+    [Export]
+    public Vector2 cellSize { get; set; } = new Vector2(8, 8);
+    [Export]
+    public Vector2 gridSize { get; set; } = new Vector2(144, 81);
 
-		// Draw outline
-		DrawRect(new Rect2(Vector2.Zero, cellSize * gridSize), Colors.SlateGray, false);
+    // --- Methods --- //
+    public override void _Ready()
+    {
+        base._EnterTree();
+        cellWidth = (int)cellSize.X;
+        cellHeight = (int)cellSize.Y;
+        gridWidth = (int)gridSize.X;
+        gridHeight = (int)gridSize.Y;
 
-		// Draw every cell
-		Rect2 cellRect = new Rect2(Vector2.Zero, cellSize);
-		for (int x = 0; x < gridWidth; x++)
-		{
-			for (int y = 0; y < gridHeight; y++)
-			{
-				if (elementArray[x, y] != null)
-				{
-					// If you want to override to have a draw method inside the Element Class, you can,
-					// But I am concerned with slight optimisation issues tho
-					cellRect.Position = cellSize * new Vector2(x, y);
-					DrawRect(cellRect, elementArray[x, y].color);
-				}
-			}
-		}
-	}
+        Button firstButton = GetNode<Button>("../Control/ElementContainer/Sand"); // Change for a cleaner way of handling inputs
+        buttonGroup = firstButton.ButtonGroup;
 
-	public override void _Process(double delta)
-	{
-		base._Process(delta);
+        elementArray = new Element[gridWidth, gridHeight];
+    }
+
+
+    public override void _Draw()
+    {
+        base._Draw();
+
+        // Draw outline
+        DrawRect(new Rect2(Vector2.Zero, cellSize * gridSize), Colors.SlateGray, false);
+
+        // Draw every cell
+        Rect2 cellRect = new Rect2(Vector2.Zero, cellSize);
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                if (elementArray[x, y] != null)
+                {
+                    // If you want to override to have a draw method inside the Element Class, you can,
+                    // But I am concerned with slight optimisation issues tho
+                    cellRect.Position = cellSize * new Vector2(x, y);
+                    DrawRect(cellRect, elementArray[x, y].color);
+                }
+            }
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
         PlacementHandler();
         CellUpdateHandler();
 
         QueueRedraw();
     }
 
-	private void PlacementHandler()
+    private void PlacementHandler()
     {
         foreach (BaseButton button in buttonGroup.GetButtons())
         {
@@ -90,31 +90,20 @@ public partial class CellularAutomataEngine : Node2D
             Vector2 pos = GetViewport().GetMousePosition() / cellSize;
             if (0 <= pos.X && pos.X < gridWidth && 0 <= pos.Y && pos.Y < gridHeight)
             {
-                switch (selectedElement) // ugly but was the only thing on my mind
-                {
-                    case "Sand":
-                        elementArray[(int)pos.X, (int)pos.Y] = new Sand();
-                        break;
-
-                    case "Water":
-                        elementArray[(int)pos.X, (int)pos.Y] = new Water();
-                        break;
-
-                    case "Oil":
-                        elementArray[(int)pos.X, (int)pos.Y] = new Oil();
-                        break;
-
-                    default:
-                        break;
-                }
+                createElement((int)pos.X, (int)pos.Y, selectedElement);
 
             }
         }
     }
 
+    private void createElement(int x, int y, string elementType)
+    {
+        elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
+    }
+
     private void CellUpdateHandler()
     {
-        Element[,] oldElementArray = (Element[,]) elementArray.Clone();
+        Element[,] oldElementArray = (Element[,])elementArray.Clone();
 
         for (int x = 0; x < gridWidth; x++)
         {
@@ -123,6 +112,65 @@ public partial class CellularAutomataEngine : Node2D
                 if (oldElementArray[x, y] != null)
                 {
                     oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight);
+                }
+            }
+        }
+    }
+
+
+
+    public void SaveGridToFile(string fileName)
+    {
+        GD.Print("heyyyy");
+        using (StreamWriter writer = new StreamWriter(fileName))
+        {
+            // Write header line
+            writer.WriteLine(gridWidth + " " + gridHeight + " " + cellWidth + " " + cellHeight);
+
+            // Write rest of file
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    if (elementArray[x, y] != null) writer.Write(elementArray[x, y].GetType() + " ");
+                    else writer.Write("- ");
+                }
+                writer.Write("\n");
+            }
+        }
+    }
+
+    public void LoadGridFromFile(string fileName)
+    {
+        if (File.Exists(fileName)) {
+            // Store each line in array of strings
+            string[] lines = File.ReadAllLines(fileName);
+
+            string[] header = lines[0].Split(" ", false);
+            if (header.Length < 4) throw new DataException("The file header isn't formatted correctly");
+
+            // Initializing every variable according to the headers
+            gridWidth = header[0].ToInt();
+            gridHeight = header[1].ToInt();
+            gridSize = new Vector2(gridWidth, gridHeight);
+            cellWidth = header[2].ToInt();
+            cellHeight = header[3].ToInt();
+            cellSize = new Vector2(cellWidth, cellHeight);
+
+            elementArray = new Element[gridWidth, gridHeight];
+
+            // Read rest of file
+            if (lines.Length < gridWidth) throw new DataException("The file doesn't have the correct amount of rows");
+
+            for (int x = 0; x < gridWidth; x++)
+            {
+                string[] line = lines[x +1].Split(" ", false);
+                if (line.Length < gridHeight)
+                    throw new DataException("The file doesn't have the correct amount of lines on row " + x + " : " + line.Length + " instead of " + gridHeight);
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    // If element non null
+                    if (line[y] != "-") createElement(x, y, line[y]);
                 }
             }
         }
