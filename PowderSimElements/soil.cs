@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 public class Soil : Powder
 {
 	public (int, int)[] cardinals = [(0, 1), (1, 0), (0, -1), (-1, 0)];
-	private Color baseColor = Color.FromHtml("#8d7267ff");
+	new private Color baseColor = Color.FromHtml("#8d7267ff");
 	private Color wetColor = Color.FromHtml("#3a1008ff");
 	private Color richColor = Color.FromHtml("#394e35ff");
 	private float _nutrient;
@@ -23,17 +23,6 @@ public class Soil : Powder
 		flammability = 0;
 		wetness = 0.0f;
 		nutrient = 0.0f;
-	}
-
-	public Soil(string state)
-	{
-		density = 10;
-		color = baseColor;
-		flammability = 0;
-
-		string[] stateArgs = state.Split(";", false);
-		wetness = stateArgs[0].ToFloat();
-		nutrient = stateArgs[1].ToFloat();
 	}
 
 	override public void updateColor(int T)
@@ -116,6 +105,13 @@ public class Soil : Powder
 
 	override public string getState()
 	{
-		return base.getState() + wetness + ";" + nutrient;
+		return base.getState() + ";" + wetness + ";" + nutrient;
+	}
+
+	override public void setState(string state)
+	{
+		string[] stateArgs = state.Split(";", false);
+		wetness = stateArgs[0].ToFloat();
+		nutrient = stateArgs[1].ToFloat();
 	}
 }

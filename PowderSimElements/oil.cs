@@ -7,5 +7,6 @@ public class Oil : Liquid
 		density = 4;
 		color = Colors.LightYellow;
 		flammability = 5;
+		ashCreationPercentage = 0;
 	}
 }

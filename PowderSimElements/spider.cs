@@ -141,7 +141,7 @@ public class Spider : Life
 			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
 			{
 				if ((nx, ny) == (x, y)) { continue; }
-				
+
 				// Check if there's a web in the old array (what we're reading from)
 				if (oldElementArray[nx, ny] is Web)
 				{
@@ -190,7 +190,7 @@ public class Spider : Life
 			{
 				currentState = SpiderFSM.BUILDING;
 				buildingDirection = buildDir;
-				
+
 			}
 			else
 			{
@@ -297,10 +297,10 @@ public class Spider : Life
 		}
 		Web web = new Web();
 		currentElementArray[targetX, targetY] = web;
-		
+
 		// Move onto the newly built web
 		bool moveSuccess = specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, buildingDirection.Item1, buildingDirection.Item2);
-		
+
 		if (!moveSuccess)
 		{
 			// If we couldn't move, transition to wandering on web anyway
@@ -405,8 +405,8 @@ public class Spider : Life
 	}
 	override public string getState()
 	{
-		return base.getState()
-		+ currentState + ";"
+		return base.getState() + ";"
+		+ (int) currentState + ";"
 		+ lastMeaningfulStateChangeTick + ";"
 		+ lastCellCoordinate.Item1 + ";"
 		+ lastCellCoordinate.Item2 + ";"
@@ -414,5 +414,20 @@ public class Spider : Life
 		+ wanderingDirection.Item2 + ";"
 		+ buildingDirection.Item1 + ";"
 		+ buildingDirection.Item2;
+	}
+
+	override public void setState(string state)
+	{
+		base.setState(state);
+		string[] stateArgs = state.Split(";", false);
+		// Beginning at 2, because spider is flammable
+		currentState = (SpiderFSM)stateArgs[2].ToInt();
+		lastMeaningfulStateChangeTick = stateArgs[3].ToInt();
+		lastCellCoordinate.Item1 = stateArgs[4].ToInt();
+		lastCellCoordinate.Item2 = stateArgs[5].ToInt();
+		wanderingDirection.Item1 = stateArgs[6].ToInt();
+		wanderingDirection.Item2 = stateArgs[7].ToInt();
+		buildingDirection.Item1 = stateArgs[8].ToInt();
+		buildingDirection.Item2 = stateArgs[9].ToInt();
 	}
 }

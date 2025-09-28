@@ -241,10 +241,11 @@ public partial class CellularAutomataEngine : Node2D
 	{
 		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
 	}
-	
+
 	private void createElement(int x, int y, string elementType, string state)
 	{
-		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType), state);
+		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));
+		elementArray[x, y].setState(state);
 	}
 
 	private void CellUpdateHandler()
