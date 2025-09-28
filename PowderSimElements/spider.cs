@@ -8,8 +8,8 @@ public class Spider : Life
 {
 	public int sleepTime = 5; // ticks to sleep between actions, to slow down the spider
 	private (int, int) buildingDirection;
-	private (int, int) lastCellCoordinate = (0, 0);
-	private (int, int) wanderingDirection = (0, 0);
+	private System.Collections.Generic.Queue<(int, int)> recentPositions = new System.Collections.Generic.Queue<(int, int)>();
+	private const int MAX_POSITION_HISTORY = 3; // Keep track of last 3 positions to prevent backtracking
 	private int lastMeaningfulStateChangeTick = 0; // To prevent rapid state changes
 	private Web onWeb;
 	private SpiderFSM currentState = SpiderFSM.FALLING;
@@ -25,6 +25,8 @@ public class Spider : Life
 		density = 10;
 		color = Colors.Violet;
 		flammability = 1f;
+		// Ensure each spider has a unique random seed to prevent identical behavior patterns
+		rng.Seed = (ulong)(DateTime.Now.Ticks + GetHashCode());
 	}
 
 	/// <summary>
@@ -44,6 +46,13 @@ public class Spider : Life
 			(0, 1), (1, 1), (1, 0), (1, -1),
 			(0, -1), (-1, -1), (-1, 0), (-1, 1)
 		};
+
+		// Shuffle directions using Fisher-Yates algorithm to eliminate order bias
+		for (int i = directions.Length - 1; i > 0; i--)
+		{
+			int randomIndex = rng.RandiRange(0, i);
+			(directions[i], directions[randomIndex]) = (directions[randomIndex], directions[i]);
+		}
 
 		// Raycast in all directions to see the first solid cell in valid range
 		foreach ((int, int) dir in directions)
@@ -88,7 +97,29 @@ public class Spider : Life
 
 	private int getScore((int, int) direction, (int, int) wanderingDirection)
 	{
-		return -Math.Abs(direction.Item1 - wanderingDirection.Item1) - (Math.Abs(direction.Item2 - wanderingDirection.Item2) * 2); // the more aligned with wandering direction, the higher the score
+		int maxDistance = 4;
+		int alignmentCost = Math.Abs(direction.Item1 - wanderingDirection.Item1) + Math.Abs(direction.Item2 - wanderingDirection.Item2) * 2;
+		return maxDistance - alignmentCost; // the more aligned with wandering direction, the higher the score
+	}
+
+	// Helper methods for position history management
+	private void addToPositionHistory(int x, int y)
+	{
+		recentPositions.Enqueue((x, y));
+		if (recentPositions.Count > MAX_POSITION_HISTORY)
+		{
+			recentPositions.Dequeue();
+		}
+	}
+
+	private bool isRecentPosition(int x, int y)
+	{
+		return recentPositions.Contains((x, y));
+	}
+
+	private System.Collections.Generic.List<T> filterRecentPositions<T>(System.Collections.Generic.List<T> cells, System.Func<T, (int, int)> getPosition)
+	{
+		return cells.FindAll(cell => !isRecentPosition(getPosition(cell).Item1, getPosition(cell).Item2));
 	}
 
 	// State transition functions
@@ -108,12 +139,7 @@ public class Spider : Life
 	{
 		currentState = SpiderFSM.WANDERING_TO_BUILD_SITE;
 		lastMeaningfulStateChangeTick = T;
-		var directions = new (int, int)[]
-		{
-			(0, 1), (1, 1),(1, 1), (1, -1),(1, -1),
-			(0, -1), (-1, -1),(-1, -1), (-1, 1),(-1, 1)
-		}; // bias to vertical movement
-		wanderingDirection = directions[rng.RandiRange(0, directions.Length - 1)];
+		// No directional preference - spider will move randomly while avoiding recent positions
 	}
 
 	private void transitionToBuilding(int T, (int, int) buildDir)
@@ -155,7 +181,7 @@ public class Spider : Life
 
 	private void handleWanderingOnWebState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
-		if (T - lastMeaningfulStateChangeTick > 6 * 60 && rng.Randf() < 0.01f) // After 6 seconds, small chance to start wandering to build site
+		if (T - lastMeaningfulStateChangeTick > 10 * 60 && rng.Randf() < 0.01f) // After 10 seconds, small chance to start wandering to build site
 		{
 			transitionToWanderingToBuildSite(T);
 			return;
@@ -170,8 +196,9 @@ public class Spider : Life
 				if ((nx, ny) == (x, y)) { continue; }
 
 				// Check if there's a web in the old array (what we're reading from)
-				if (oldElementArray[nx, ny] is Web)
+				if (oldElementArray[nx, ny] is Web web)
 				{
+					web.resetLifetime(); // the spider is taking care of adjacent webs (awww so cute)
 					// Check if the current array position is either empty or has a web (safe to move)
 					Element currentTarget = currentElementArray[nx, ny];
 					if (currentTarget == null || currentTarget is Web)
@@ -184,16 +211,15 @@ public class Spider : Life
 
 		if (availableWebCells.Count == 0)
 		{
-			// No adjacent web found, start falling
+			// No adjacent web found, start falling (epic fail)
 			transitionToFalling(T);
 			return;
 		}
 
-		// Move to a random adjacent web cell with higher probability
-		if (rng.Randf() < 0.3f) // 30% chance to move each tick (increased from 10%)
+		if (rng.Randf() < 0.4f) // 40% chance to move each tick
 		{
-			// Don't move back to the last position if we have other options
-			var validCells = availableWebCells.FindAll(cell => cell != lastCellCoordinate);
+			// Avoid recent positions if we have other options
+			var validCells = filterRecentPositions(availableWebCells, cell => cell);
 			if (validCells.Count == 0)
 			{
 				validCells = availableWebCells; // If no other options, use all available cells
@@ -201,7 +227,9 @@ public class Spider : Life
 
 			if (validCells.Count > 0)
 			{
-				(int, int) targetCell = validCells[rng.RandiRange(0, validCells.Count - 1)];
+				// Use proper random selection to avoid any ordering bias
+				int randomIndex = rng.RandiRange(0, validCells.Count - 1);
+				(int, int) targetCell = validCells[randomIndex];
 				specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, targetCell.Item1 - x, targetCell.Item2 - y);
 			}
 		}
@@ -270,7 +298,7 @@ public class Spider : Life
 			return;
 		}
 
-		// Select next cell to move to base on wandering direction bias
+		// Select next cell randomly while avoiding recent positions
 		if (availableCellsList.Count == 1)
 		{
 			(int, int) nextCell = availableCellsList[0];
@@ -278,23 +306,16 @@ public class Spider : Life
 			return;
 		}
 
-		(int, int) bestCell = availableCellsList[0];
-		float bestScore = getScore((bestCell.Item1 - x, bestCell.Item2 - y), wanderingDirection);
-		foreach ((int, int) cell in availableCellsList) // classic max search
+		// Prefer cells that are not in recent position history
+		var validCells = filterRecentPositions(availableCellsList, cell => cell);
+		if (validCells.Count == 0)
 		{
-			float score = getScore((cell.Item1 - x, cell.Item2 - y), wanderingDirection);
-			if (score > bestScore)
-			{
-				bestScore = score;
-				bestCell = cell;
-			}
+			validCells = availableCellsList; // If all cells are recent, use them anyway
 		}
-
-		if ((bestCell.Item1, bestCell.Item2) == lastCellCoordinate)
-		{
-			// Don't go back the way it came, pick a random available cell instead
-			bestCell = availableCellsList[rng.RandiRange(0, availableCellsList.Count - 1)];
-		}
+		
+		// Choose completely randomly from valid cells
+		int randomIndex = rng.RandiRange(0, validCells.Count - 1);
+		(int, int) bestCell = validCells[randomIndex];
 
 		specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, bestCell.Item1 - x, bestCell.Item2 - y);
 	}
@@ -412,29 +433,41 @@ public class Spider : Life
 
 		// Move spider to new position
 		currentElementArray[targetX, targetY] = this;
-		lastCellCoordinate = (x, y);
+		addToPositionHistory(x, y); // Add the old position to history
 
 		return true;
 	}
 
 	public string inspectInfo()
 	{
+		var recentPosArray = recentPositions.ToArray();
+		string recentPosStr = "";
+		foreach (var pos in recentPosArray)
+		{
+			if (recentPosStr.Length > 0) recentPosStr += ", ";
+			recentPosStr += $"({pos.Item1},{pos.Item2})";
+		}
+		
 		return $"State: {currentState}\n" +
-			$"Last Move Direction: ({lastCellCoordinate.Item1}, {lastCellCoordinate.Item2})\n" +
-			$"Wandering Direction: ({wanderingDirection.Item1}, {wanderingDirection.Item2})\n" +
+			$"Recent Positions: [{recentPosStr}]\n" +
 			$"Ticks since last state change: {lastMeaningfulStateChangeTick}\n" +
 			$"On Web: {(onWeb != null ? "Yes" : "No")}\n" +
 			$"Building Direction: ({buildingDirection.Item1}, {buildingDirection.Item2})\n";
 	}
 	override public string getState()
 	{
+		string posHistoryStr = "";
+		var posArray = recentPositions.ToArray();
+		for (int i = 0; i < posArray.Length; i++)
+		{
+			if (i > 0) posHistoryStr += ",";
+			posHistoryStr += $"{posArray[i].Item1}_{posArray[i].Item2}";
+		}
+		
 		return base.getState() + ";"
 		+ (int) currentState + ";"
 		+ lastMeaningfulStateChangeTick + ";"
-		+ lastCellCoordinate.Item1 + ";"
-		+ lastCellCoordinate.Item2 + ";"
-		+ wanderingDirection.Item1 + ";"
-		+ wanderingDirection.Item2 + ";"
+		+ posHistoryStr + ";"
 		+ buildingDirection.Item1 + ";"
 		+ buildingDirection.Item2;
 	}
@@ -446,11 +479,26 @@ public class Spider : Life
 		// Beginning at 2, because spider is flammable
 		currentState = (SpiderFSM)stateArgs[2].ToInt();
 		lastMeaningfulStateChangeTick = stateArgs[3].ToInt();
-		lastCellCoordinate.Item1 = stateArgs[4].ToInt();
-		lastCellCoordinate.Item2 = stateArgs[5].ToInt();
-		wanderingDirection.Item1 = stateArgs[6].ToInt();
-		wanderingDirection.Item2 = stateArgs[7].ToInt();
-		buildingDirection.Item1 = stateArgs[8].ToInt();
-		buildingDirection.Item2 = stateArgs[9].ToInt();
+		
+		// Parse position history
+		recentPositions.Clear();
+		if (!string.IsNullOrEmpty(stateArgs[4]))
+		{
+			string[] posStrs = stateArgs[4].Split(",", false);
+			foreach (string posStr in posStrs)
+			{
+				if (!string.IsNullOrEmpty(posStr))
+				{
+					string[] coords = posStr.Split("_", false);
+					if (coords.Length == 2)
+					{
+						recentPositions.Enqueue((coords[0].ToInt(), coords[1].ToInt()));
+					}
+				}
+			}
+		}
+		
+		buildingDirection.Item1 = stateArgs[5].ToInt();
+		buildingDirection.Item2 = stateArgs[6].ToInt();
 	}
 }

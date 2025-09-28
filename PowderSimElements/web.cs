@@ -2,8 +2,7 @@ using Godot;
 
 public class Web : Life
 {
-	public (int, int) successor;
-	public (int, int) predecessor;
+	private int lifetime = 100 * 60; // ticks
 	public Web()
 	{
 		ashCreationPercentage = 0.2f;
@@ -12,17 +11,19 @@ public class Web : Life
 		flammability = 3;
 	}
 
+	public void resetLifetime()
+	{
+		lifetime = 100 * 60;
+	}
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 
-		// if (!(oldElementArray[successor.Item1, successor.Item2] == null) || !(oldElementArray[predecessor.Item1, predecessor.Item2] == null))
-		// {
-		// 	if (rng.Randf() < 0.02f && currentElementArray[x, y] == this) // small chance to dissipate if its successor or predecessor is gone
-		// 	{
-		// 		currentElementArray[x, y] = null;
-		// 		return;
-		// 	}
-		// }
+		lifetime--;
+		if (lifetime <= 0 && currentElementArray[x, y] == this)
+		{
+			currentElementArray[x, y] = null;
+			return;
+		}
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
