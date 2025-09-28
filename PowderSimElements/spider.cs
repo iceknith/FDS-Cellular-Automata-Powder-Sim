@@ -479,25 +479,6 @@ public class Spider : Life
 		// Beginning at 2, because spider is flammable
 		currentState = (SpiderFSM)stateArgs[2].ToInt();
 		lastMeaningfulStateChangeTick = stateArgs[3].ToInt();
-		
-		// Parse position history
-		recentPositions.Clear();
-		if (!string.IsNullOrEmpty(stateArgs[4]))
-		{
-			string[] posStrs = stateArgs[4].Split(",", false);
-			foreach (string posStr in posStrs)
-			{
-				if (!string.IsNullOrEmpty(posStr))
-				{
-					string[] coords = posStr.Split("_", false);
-					if (coords.Length == 2)
-					{
-						recentPositions.Enqueue((coords[0].ToInt(), coords[1].ToInt()));
-					}
-				}
-			}
-		}
-		
 		buildingDirection.Item1 = stateArgs[5].ToInt();
 		buildingDirection.Item2 = stateArgs[6].ToInt();
 	}
