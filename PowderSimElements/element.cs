@@ -1,5 +1,4 @@
 using System;
-using System.Transactions;
 using Godot;
 
 public abstract class Element
@@ -141,9 +140,17 @@ public abstract class Element
 		// This function gives a String, that are needed to create
 		// a perfect copy of the Element
 		// If it is overidden (and it outputs a String)
-		// A constructor that takes a String (formatted in the same way) should be implemented for this class 
+		// setState must also be overwritten.
 		// The strings cannot use either a "space" or a "|"
-		return null;
+		if (flammability > 0) return burning + ";" + burningLifetime;
+		else return null;
+	}
+	
+	virtual public void setState(string state)
+	{
+		string[] stateArgs = state.Split(";", false);
+		burning = stateArgs[0] == "True";
+		burningLifetime = stateArgs[1].ToInt();
 	}
 
 }
