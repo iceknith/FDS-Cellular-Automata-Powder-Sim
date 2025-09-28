@@ -6,8 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 public class Spider : Life
 {
+	public int sleepTime = 5; // ticks to sleep between actions, to slow down the spider
 	private (int, int) buildingDirection;
-	private (int, int) lastMoveDirection = (0, 0);
+	private (int, int) lastCellCoordinate = (0, 0);
 	private (int, int) wanderingDirection = (0, 0);
 	private int lastMeaningfulStateChangeTick = 0; // To prevent rapid state changes
 	private Web onWeb;
@@ -26,9 +27,68 @@ public class Spider : Life
 		flammability = 0.5f;
 	}
 
+	/// <summary>
+	/// No bounds checking, make sure to call only with valid coordinates
+	/// </summary>
+	private bool isValidBuildDestination(int x, int y, Element[,] oldElementArray, int maxX, int maxY)
+	{
+		if (x == 0 || x == maxX - 1 || y == 0 || y == maxY - 1) return true; // bounds are valid
+		if (oldElementArray[x, y] != null && (oldElementArray[x, y].density > density || oldElementArray[x, y] is Web)) return true; // valid solid cell or web
+		return false;
+	}
+	private (int, int) getBuildDirection(int x, int y, Element[,] oldElementArray, int maxX, int maxY)
+	{
+		// Check all 8 directions for a solid cell to build from
+		var directions = new (int, int)[]
+		{
+			(0, 1), (1, 1), (1, 0), (1, -1),
+			(0, -1), (-1, -1), (-1, 0), (-1, 1)
+		};
+
+		// Raycast in all directions to see the first solid cell in valid range
+		foreach ((int, int) dir in directions)
+		{
+			bool valid = true;
+			int adjacentWebsAndSolids = 0;
+			for (int dist = 1; dist <= 15; dist++) // max build distance of 15
+			{
+				int checkX = x + dir.Item1 * dist;
+				int checkY = y + dir.Item2 * dist;
+				if (checkX < 0 || checkX >= maxX || checkY < 0 || checkY >= maxY) break; // out of bounds
+				if (dist < 4 && isValidBuildDestination(checkX, checkY, oldElementArray, maxX, maxY)) break;
+
+				// Check for adjacent solids along the build path (perpendicular directions)
+				int perpX = -dir.Item2, perpY = dir.Item1;
+
+				// Check both perpendicular neighbors at this step
+				for (int p = -1; p <= 1; p += 2)
+				{
+					int adjX = checkX + perpX * p;
+					int adjY = checkY + perpY * p;
+					if (adjX >= 0 && adjX < maxX && adjY >= 0 && adjY < maxY)
+					{
+						Element e = oldElementArray[adjX, adjY];
+						if (e != null) // including webs
+						{
+							adjacentWebsAndSolids += 1;
+						}
+					}
+				}
+				if (adjacentWebsAndSolids > dist / 4) // allow 1 adjacent solid for every 4 distance units
+				{
+					valid = false; // too close to solid, can't build here
+				}
+				if (!valid) break;
+
+				if (isValidBuildDestination(checkX, checkY, oldElementArray, maxX, maxY)) return dir; // found a valid build direction
+			}
+		}
+		return (0, 0); // No valid direction found
+	}
+
 	private int getScore((int, int) direction, (int, int) wanderingDirection)
 	{
-		return - Math.Abs(direction.Item1 - wanderingDirection.Item1) - Math.Abs(direction.Item2 - wanderingDirection.Item2); // the more aligned with wandering direction, the higher the score
+		return -Math.Abs(direction.Item1 - wanderingDirection.Item1) - Math.Abs(direction.Item2 - wanderingDirection.Item2); // the more aligned with wandering direction, the higher the score
 	}
 
 	private void handleFallingState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
@@ -70,34 +130,78 @@ public class Spider : Life
 		{
 			currentState = SpiderFSM.WANDERING_TO_BUILD_SITE; // Too long on web, start wandering to build site
 			lastMeaningfulStateChangeTick = T;
+			wanderingDirection = (rng.RandiRange(-1, 1), rng.RandiRange(-1, 1));
 			return;
 		}
 
+		// Collect all adjacent web cells where we can move
+		var availableWebCells = new System.Collections.Generic.List<(int, int)>();
 		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++) // including diagonals
 		{
 			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
 			{
 				if ((nx, ny) == (x, y)) { continue; }
-				if (oldElementArray[nx, ny] != null && oldElementArray[nx, ny] is Web)
+				
+				// Check if there's a web in the old array (what we're reading from)
+				if (oldElementArray[nx, ny] is Web)
 				{
-					if (currentElementArray[nx, ny] is not Web) return; // Safety check (can happen if another spider moves onto this cell)
-					// Move to a random adjacent web cell
-					if (rng.Randf() < 0.1f && (nx - x, ny - y) != lastMoveDirection) // 10% chance to move each tick, but not back the way it came
+					// Check if the current array position is either empty or has a web (safe to move)
+					Element currentTarget = currentElementArray[nx, ny];
+					if (currentTarget == null || currentTarget is Web)
 					{
-						specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, nx - x, ny - y);
-						lastMoveDirection = (nx - x, ny - y);
+						availableWebCells.Add((nx, ny));
 					}
-					return; // Stay on the web
 				}
 			}
 		}
-		// No adjacent web found, start falling
-		currentState = SpiderFSM.FALLING;
+
+		if (availableWebCells.Count == 0)
+		{
+			// No adjacent web found, start falling
+			currentState = SpiderFSM.FALLING;
+			return;
+		}
+
+		// Move to a random adjacent web cell with higher probability
+		if (rng.Randf() < 0.3f) // 30% chance to move each tick (increased from 10%)
+		{
+			// Don't move back to the last position if we have other options
+			var validCells = availableWebCells.FindAll(cell => cell != lastCellCoordinate);
+			if (validCells.Count == 0)
+			{
+				validCells = availableWebCells; // If no other options, use all available cells
+			}
+
+			if (validCells.Count > 0)
+			{
+				(int, int) targetCell = validCells[rng.RandiRange(0, validCells.Count - 1)];
+				specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, targetCell.Item1 - x, targetCell.Item2 - y);
+			}
+		}
 	}
 
 	private void handleWanderingToBuildSiteState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
-		// get all available cells with webs or that are adjacent to solid cells
+		if (T - lastMeaningfulStateChangeTick > 15)
+		{
+			// The spider wandered enough, start building
+			(int, int) buildDir = getBuildDirection(x, y, oldElementArray, maxX, maxY);
+			if (buildDir != (0, 0))
+			{
+				currentState = SpiderFSM.BUILDING;
+				buildingDirection = buildDir;
+				
+			}
+			else
+			{
+				currentState = SpiderFSM.WANDERING_TO_BUILD_SITE; // No valid build direction, go back to wandering to build site
+				wanderingDirection = (rng.RandiRange(-1, 1), rng.RandiRange(-1, 1));
+			}
+			lastMeaningfulStateChangeTick = T;
+			return;
+		}
+
+		// get all available cells with webs or that are empty
 		var availableCellsList = new System.Collections.Generic.List<(int, int)>();
 		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++)
 		{
@@ -110,19 +214,20 @@ public class Spider : Life
 			}
 		}
 		// remove non web cells that are not adjacent to solid cells
-		foreach ((int, int) cell in availableCellsList)
+		foreach ((int, int) cell in availableCellsList.ToArray()) // iterate over a copy since we may remove items
 		{
 			if (oldElementArray[cell.Item1, cell.Item2] == null)
 			{
 				bool solidNeighbor = false;
+				// for each empty cell, check if it has a solid neighbor to climb on, otherwise remove it from the list
 				for (int nnx = Math.Max(0, cell.Item1 - 1); nnx <= Math.Min(cell.Item1 + 1, maxX - 1); nnx++) // including diagonals
 				{
 					for (int nny = Math.Max(0, cell.Item2 - 1); nny <= Math.Min(cell.Item2 + 1, maxY - 1); nny++)
 					{
 						if ((nnx, nny) == (cell.Item1, cell.Item2)) continue;
-						if (oldElementArray[nnx, nny] != null && oldElementArray[nnx, nny].density >= density)
+						if (oldElementArray[nnx, nny] != null && oldElementArray[nnx, nny].density > density)
 						{
-							solidNeighbor = true;
+							solidNeighbor = true; // found a solid neighbor, keep this cell
 							break;
 						}
 					}
@@ -161,11 +266,68 @@ public class Spider : Life
 				bestCell = cell;
 			}
 		}
+
+		if ((bestCell.Item1, bestCell.Item2) == lastCellCoordinate)
+		{
+			// Don't go back the way it came, pick a random available cell instead
+			bestCell = availableCellsList[rng.RandiRange(0, availableCellsList.Count - 1)];
+		}
+
 		specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, bestCell.Item1 - x, bestCell.Item2 - y);
+	}
+
+	private void handleBuildingState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
+	{
+		// Place a web in the building direction if the cell is empty
+		int targetX = x + buildingDirection.Item1;
+		int targetY = y + buildingDirection.Item2;
+		if (targetX < 0 || targetX >= maxX || targetY < 0 || targetY >= maxY)
+		{
+			// Out of bounds, stop building and transition to wandering on web
+			currentState = SpiderFSM.WANDERING_ON_WEB;
+			lastMeaningfulStateChangeTick = T;
+			return;
+		}
+		if (oldElementArray[targetX, targetY] != null)
+		{
+			// Can't build there anymore, transition to wandering on web
+			currentState = SpiderFSM.WANDERING_ON_WEB;
+			lastMeaningfulStateChangeTick = T;
+			return;
+		}
+		Web web = new Web();
+		currentElementArray[targetX, targetY] = web;
+		
+		// Move onto the newly built web
+		bool moveSuccess = specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, buildingDirection.Item1, buildingDirection.Item2);
+		
+		if (!moveSuccess)
+		{
+			// If we couldn't move, transition to wandering on web anyway
+			currentState = SpiderFSM.WANDERING_ON_WEB;
+			lastMeaningfulStateChangeTick = T;
+			return;
+		}
+
+		if (currentElementArray[x, y] == null)
+		{
+			// Fix any holes left behind by placing a web
+			currentElementArray[x, y] = new Web();
+		}
 	}
 
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
+		if (sleepTime > 0)
+		{
+			sleepTime--;
+			return;
+		}
+		else
+		{
+			sleepTime = 5; // Sleep every 5 ticks to slow down the spider
+		}
+
 		switch (currentState)
 		{
 			case SpiderFSM.FALLING:
@@ -178,7 +340,7 @@ public class Spider : Life
 				handleWanderingToBuildSiteState(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 				break;
 			case SpiderFSM.BUILDING:
-				// Handle building state
+				handleBuildingState(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 				break;
 		}
 	}
@@ -188,41 +350,69 @@ public class Spider : Life
 	/// </summary>
 	public bool specialMove(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
 	{
+		// Safety: Only move if this spider is still at (x, y)
+		if (currentElementArray[x, y] != this)
+			return false;
 
-		if (onWeb != null && (movementX != 0 || movementY != 0)) // Moving off the web
+		int targetX = x + movementX;
+		int targetY = y + movementY;
+
+		// Bounds check
+		if (targetX < 0 || targetX >= maxX || targetY < 0 || targetY >= maxY)
+			return false;
+
+		// Check if target cell is occupied by something other than a web
+		Element targetElem = currentElementArray[targetX, targetY];
+		if (targetElem != null && targetElem is not Web)
+			return false;
+
+		// Handle leaving a web behind if moving off a web
+		if (onWeb != null && (movementX != 0 || movementY != 0))
 		{
-			currentElementArray[x, y] = onWeb; // Leave a web behind
+			currentElementArray[x, y] = onWeb;
+			onWeb = null;
 		}
 		else
 		{
-			currentElementArray[x, y] = null; // Leave nothing behind
-		}
-		if (oldElementArray[x + movementX, y + movementY] is Web)
-		{
-			onWeb = (Web)oldElementArray[x + movementX, y + movementY];
+			currentElementArray[x, y] = null;
 		}
 
-		currentElementArray[movementX + x, movementY + y] = this; // Move to new position
-		lastMoveDirection = (movementX, movementY);
+		// If moving onto a web, "pick it up"
+		if (currentElementArray[targetX, targetY] is Web web)
+		{
+			onWeb = web;
+		}
+		else
+		{
+			onWeb = null;
+		}
+
+		// Move spider to new position
+		currentElementArray[targetX, targetY] = this;
+		lastCellCoordinate = (x, y);
+
 		return true;
 	}
 
 	public string inspectInfo()
 	{
 		return $"State: {currentState}\n" +
-			$"Last Move Direction: ({lastMoveDirection.Item1}, {lastMoveDirection.Item2})\n" +
+			$"Last Move Direction: ({lastCellCoordinate.Item1}, {lastCellCoordinate.Item2})\n" +
 			$"Wandering Direction: ({wanderingDirection.Item1}, {wanderingDirection.Item2})\n" +
 			$"Ticks since last state change: {lastMeaningfulStateChangeTick}\n" +
-			$"On Web: {(onWeb != null ? "Yes" : "No")}\n";
+			$"On Web: {(onWeb != null ? "Yes" : "No")}\n" +
+			$"Building Direction: ({buildingDirection.Item1}, {buildingDirection.Item2})\n";
 	}
 	override public string getState()
 	{
 		return base.getState()
 		+ currentState + ";"
 		+ lastMeaningfulStateChangeTick + ";"
-		+ lastMoveDirection.Item1 + ";"
-		+ lastMoveDirection.Item2 + ";"
+		+ lastCellCoordinate.Item1 + ";"
+		+ lastCellCoordinate.Item2 + ";"
 		+ wanderingDirection.Item1 + ";"
-		+ wanderingDirection.Item2;
+		+ wanderingDirection.Item2 + ";"
+		+ buildingDirection.Item1 + ";"
+		+ buildingDirection.Item2;
 	}
 }

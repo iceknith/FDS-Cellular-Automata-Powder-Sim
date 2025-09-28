@@ -22,5 +22,6 @@ public class Smoke : Gas
 		}
 
 		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T); // keep at the end because of returns contained in base method
+		
 	}
 }

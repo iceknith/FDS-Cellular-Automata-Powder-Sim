@@ -19,7 +19,6 @@ public abstract class Element
 		set { _wetness = Math.Clamp(value, 0, 1); }  // set method
 	}
 
-
 	protected bool canMoveDownOnElement(Element elementWhereMovement)
 	{
 		return elementWhereMovement == null || elementWhereMovement.density < density;
@@ -35,7 +34,7 @@ public abstract class Element
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}
 
-	public virtual bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+	protected bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
 	{
 		int newX = x + movementX, newY = y + movementY;
 
@@ -144,7 +143,7 @@ public abstract class Element
 		// If it is overidden (and it outputs a String)
 		// A constructor that takes a String (formatted in the same way) should be implemented for this class 
 		// The strings cannot use either a "space" or a "|"
-		return burning + ";" + burningLifetime;
+		return null;
 	}
 
 }

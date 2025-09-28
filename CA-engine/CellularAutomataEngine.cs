@@ -17,6 +17,9 @@ public partial class CellularAutomataEngine : Node2D
 
 	private DrawingState _drawingState = DrawingState.None;
 
+	// Elements that should only be placed once per click, not continuously
+	private readonly string[] singleClickElements = {"Spider" };
+
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently
 
@@ -106,7 +109,15 @@ public partial class CellularAutomataEngine : Node2D
 			switch (eventMouseButton.ButtonIndex)
 			{
 				case MouseButton.Left:
-					_drawingState = DrawingState.Drawing;
+					// Check if this is a single-click element
+					if (IsSingleClickElement(selectedElement))
+					{
+						PlaceSingleElement();
+					}
+					else
+					{
+						_drawingState = DrawingState.Drawing;
+					}
 					break;
 				case MouseButton.Right:
 					_drawingState = DrawingState.Erasing;
@@ -170,11 +181,6 @@ public partial class CellularAutomataEngine : Node2D
 			int yStart = Math.Clamp((int)pos.Y - brushSize / 2, 0, gridWidth);
 			int yStop = Math.Clamp((int)pos.Y + brushSize / 2 + brushSize % 2, 0, gridHeight);
 
-			if (selectedElement == "Spider" && _drawingState == DrawingState.Drawing) { // special case for spider to avoid creating multiple spiders at once, will need to do for other single entities later
-				elementArray[xStart, yStart] = new Spider();
-				return;
-			}
-
 			for (int x = xStart; x < xStop; x++)
 			{
 				for (int y = yStart; y < yStop; y++)
@@ -206,6 +212,31 @@ public partial class CellularAutomataEngine : Node2D
 			}
 		}
 	}
+
+	private bool IsSingleClickElement(string elementName)
+	{
+		return System.Array.Exists(singleClickElements, element => element == elementName); // found on stackoverflow
+	}
+
+	private void PlaceSingleElement()
+	{
+		Vector2 pos = GetViewport().GetMousePosition() / cellSize;
+		int x = Math.Clamp((int)pos.X, 0, gridWidth - 1);
+		int y = Math.Clamp((int)pos.Y, 0, gridHeight - 1);
+
+		// Handle special cases for single-click elements
+		switch (selectedElement)
+		{
+			default:
+				// Only place if the cell is empty or we're explicitly replacing
+				if (elementArray[x, y] == null)
+				{
+					createElement(x, y, selectedElement);
+				}
+				break;
+		}
+	}
+
 	private void createElement(int x, int y, string elementType)
 	{
 		elementArray[x, y] = (Element)Activator.CreateInstance(Type.GetType(elementType));

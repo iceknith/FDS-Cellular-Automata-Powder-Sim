@@ -62,6 +62,13 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "SOIL"
 metadata/element = "Soil"
 
+[node name="Wood" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "WOOD"
+metadata/element = "Wood"
+
 [node name="Fire" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true
