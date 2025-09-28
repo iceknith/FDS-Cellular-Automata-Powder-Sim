@@ -22,20 +22,19 @@ public class Gas : Element
 
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
-		int decision = rng.RandiRange(0, 3);
+		// Use a simple but perfectly balanced approach
+		float decision = rng.Randf(); // 0.0 to 1.0
 		int distFromCloudLine = Math.Abs(cloudLineY - y) + 1;
 
-		if (decision == 0) // drift right
-		{
-			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 0);
-			return;
-		}
-		else if (decision == 1) // drift left
+		if (decision < 0.25f) // 25% chance - drift left (changed order to eliminate any potential bias)
 		{
 			move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 0);
-			return;
 		}
-		else // vertical movement 
+		else if (decision < 0.5f) // 25% chance - drift right
+		{
+			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 0);
+		}
+		else // 50% chance - vertical movement 
 		{
 			float distr = rng.Randf();
 
@@ -45,19 +44,15 @@ public class Gas : Element
 				dir = -1; // move up if below cloud line
 			}
 
-			if (distr < (1f / distFromCloudLine)) // more likely to move the closer to the cloud line the farther away from it
+			if (distr < (1f / distFromCloudLine)) // more likely to move towards cloud line when farther away
 			{
 				move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, dir);
 			}
-			else // if it doesn't move towards the cloud line, it has a small chance to move away from it
+			else if (rng.Randf() > 0.7f) // 30% chance to move away from cloud line
 			{
-				if (rng.Randf() > 0.0f)
-				{
-					move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, -dir);
-				}
-
+				move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, -dir);
 			}
-
+			// else: 70% chance to stay put for vertical movement
 		}
 
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);

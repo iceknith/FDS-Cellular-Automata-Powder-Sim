@@ -251,16 +251,38 @@ public partial class CellularAutomataEngine : Node2D
 	{
 		Element[,] oldElementArray = (Element[,])elementArray.Clone();
 
+		// Create a list of all element positions and shuffle them to eliminate processing order bias (created a problem with gas flow bias)
+		var elementPositions = new System.Collections.Generic.List<(int x, int y)>();
+		
 		for (int x = 0; x < gridWidth; x++)
 		{
 			for (int y = 0; y < gridHeight; y++)
 			{
 				if (oldElementArray[x, y] != null)
 				{
-					oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight, tick);
+					elementPositions.Add((x, y));
 				}
 			}
 		}
+
+		// Shuffle the positions to randomize processing order
+		var rng = new RandomNumberGenerator();
+		for (int i = elementPositions.Count - 1; i > 0; i--)
+		{
+			int randomIndex = rng.RandiRange(0, i);
+			(elementPositions[i], elementPositions[randomIndex]) = (elementPositions[randomIndex], elementPositions[i]);
+		}
+
+		// Process elements in random order
+		foreach ((int x, int y) in elementPositions)
+		{
+			if (oldElementArray[x, y] != null)
+			{
+				oldElementArray[x, y].update(oldElementArray, elementArray, x, y, gridWidth, gridHeight, tick);
+			}
+		}
+		
+		tick++;
 	}
 
 
