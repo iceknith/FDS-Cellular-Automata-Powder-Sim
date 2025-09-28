@@ -24,7 +24,7 @@ public class Spider : Life
 	{
 		density = 10;
 		color = Colors.Violet;
-		flammability = 0.5f;
+		flammability = 1f;
 	}
 
 	/// <summary>
@@ -88,7 +88,39 @@ public class Spider : Life
 
 	private int getScore((int, int) direction, (int, int) wanderingDirection)
 	{
-		return -Math.Abs(direction.Item1 - wanderingDirection.Item1) - Math.Abs(direction.Item2 - wanderingDirection.Item2); // the more aligned with wandering direction, the higher the score
+		return -Math.Abs(direction.Item1 - wanderingDirection.Item1) - (Math.Abs(direction.Item2 - wanderingDirection.Item2) * 2); // the more aligned with wandering direction, the higher the score
+	}
+
+	// State transition functions
+	private void transitionToFalling(int T)
+	{
+		currentState = SpiderFSM.FALLING;
+		lastMeaningfulStateChangeTick = T;
+	}
+
+	private void transitionToWanderingOnWeb(int T)
+	{
+		currentState = SpiderFSM.WANDERING_ON_WEB;
+		lastMeaningfulStateChangeTick = T;
+	}
+
+	private void transitionToWanderingToBuildSite(int T)
+	{
+		currentState = SpiderFSM.WANDERING_TO_BUILD_SITE;
+		lastMeaningfulStateChangeTick = T;
+		var directions = new (int, int)[]
+		{
+			(0, 1), (1, 1),(1, 1), (1, -1),(1, -1),
+			(0, -1), (-1, -1),(-1, -1), (-1, 1),(-1, 1)
+		}; // bias to vertical movement
+		wanderingDirection = directions[rng.RandiRange(0, directions.Length - 1)];
+	}
+
+	private void transitionToBuilding(int T, (int, int) buildDir)
+	{
+		currentState = SpiderFSM.BUILDING;
+		lastMeaningfulStateChangeTick = T;
+		buildingDirection = buildDir;
 	}
 
 	private void handleFallingState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
@@ -112,10 +144,7 @@ public class Spider : Life
 		}
 		if (solidNeighbor)
 		{
-			currentState = SpiderFSM.WANDERING_TO_BUILD_SITE;
-			lastMeaningfulStateChangeTick = T;
-
-			wanderingDirection = (rng.RandiRange(-1, 1), rng.RandiRange(-1, 1));
+			transitionToWanderingToBuildSite(T);
 		}
 		else
 		{
@@ -128,9 +157,7 @@ public class Spider : Life
 	{
 		if (T - lastMeaningfulStateChangeTick > 6 * 60 && rng.Randf() < 0.01f) // After 6 seconds, small chance to start wandering to build site
 		{
-			currentState = SpiderFSM.WANDERING_TO_BUILD_SITE; // Too long on web, start wandering to build site
-			lastMeaningfulStateChangeTick = T;
-			wanderingDirection = (rng.RandiRange(-1, 1), rng.RandiRange(-1, 1));
+			transitionToWanderingToBuildSite(T);
 			return;
 		}
 
@@ -158,7 +185,7 @@ public class Spider : Life
 		if (availableWebCells.Count == 0)
 		{
 			// No adjacent web found, start falling
-			currentState = SpiderFSM.FALLING;
+			transitionToFalling(T);
 			return;
 		}
 
@@ -188,16 +215,12 @@ public class Spider : Life
 			(int, int) buildDir = getBuildDirection(x, y, oldElementArray, maxX, maxY);
 			if (buildDir != (0, 0))
 			{
-				currentState = SpiderFSM.BUILDING;
-				buildingDirection = buildDir;
-
+				transitionToBuilding(T, buildDir);
 			}
 			else
 			{
-				currentState = SpiderFSM.WANDERING_TO_BUILD_SITE; // No valid build direction, go back to wandering to build site
-				wanderingDirection = (rng.RandiRange(-1, 1), rng.RandiRange(-1, 1));
+				transitionToWanderingToBuildSite(T); // No valid build direction, restart wandering
 			}
-			lastMeaningfulStateChangeTick = T;
 			return;
 		}
 
@@ -243,7 +266,7 @@ public class Spider : Life
 		if (availableCellsList.Count == 0)
 		{
 			// No available cells, start falling, poor thing :(
-			currentState = SpiderFSM.FALLING;
+			transitionToFalling(T);
 			return;
 		}
 
@@ -284,15 +307,13 @@ public class Spider : Life
 		if (targetX < 0 || targetX >= maxX || targetY < 0 || targetY >= maxY)
 		{
 			// Out of bounds, stop building and transition to wandering on web
-			currentState = SpiderFSM.WANDERING_ON_WEB;
-			lastMeaningfulStateChangeTick = T;
+			transitionToWanderingOnWeb(T);
 			return;
 		}
 		if (oldElementArray[targetX, targetY] != null)
 		{
 			// Can't build there anymore, transition to wandering on web
-			currentState = SpiderFSM.WANDERING_ON_WEB;
-			lastMeaningfulStateChangeTick = T;
+			transitionToWanderingOnWeb(T);
 			return;
 		}
 		Web web = new Web();
@@ -304,8 +325,7 @@ public class Spider : Life
 		if (!moveSuccess)
 		{
 			// If we couldn't move, transition to wandering on web anyway
-			currentState = SpiderFSM.WANDERING_ON_WEB;
-			lastMeaningfulStateChangeTick = T;
+			transitionToWanderingOnWeb(T);
 			return;
 		}
 
@@ -343,6 +363,9 @@ public class Spider : Life
 				handleBuildingState(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 				break;
 		}
+
+		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
+		updateColor(T);
 	}
 
 	/// <summary>
