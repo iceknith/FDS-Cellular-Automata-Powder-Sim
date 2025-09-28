@@ -34,7 +34,7 @@ public abstract class Element
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}
 
-	protected bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+	public virtual bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
 	{
 		int newX = x + movementX, newY = y + movementY;
 
@@ -143,7 +143,7 @@ public abstract class Element
 		// If it is overidden (and it outputs a String)
 		// A constructor that takes a String (formatted in the same way) should be implemented for this class 
 		// The strings cannot use either a "space" or a "|"
-		return null;
+		return burning + ";" + burningLifetime;
 	}
 
 }

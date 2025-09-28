@@ -94,6 +94,13 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "STEAM"
 metadata/element = "Steam"
 
+[node name="Spider" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "SPIDER"
+metadata/element = "Spider"
+
 [node name="Sliders" type="VBoxContainer" parent="Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0

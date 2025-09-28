@@ -18,7 +18,7 @@ public class Soil : Powder
 
 	public Soil()
 	{
-		density = 10;
+		density = 20;
 		color = baseColor;
 		flammability = 0;
 		wetness = 0.0f;
@@ -113,9 +113,9 @@ public class Soil : Powder
 
 		base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T); // keep at the end because of returns contained in base method
 	}
-	
+
 	override public string getState()
 	{
-		return wetness + ";" + nutrient;
+		return base.getState() + wetness + ";" + nutrient;
 	}
 }

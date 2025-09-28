@@ -170,6 +170,11 @@ public partial class CellularAutomataEngine : Node2D
 			int yStart = Math.Clamp((int)pos.Y - brushSize / 2, 0, gridWidth);
 			int yStop = Math.Clamp((int)pos.Y + brushSize / 2 + brushSize % 2 + 1, 0, gridHeight);
 
+			if (selectedElement == "Spider" && _drawingState == DrawingState.Drawing) { // special case for spider to avoid creating multiple spiders at once, will need to do for other single entities later
+				elementArray[xStart, yStart] = new Spider();
+				return;
+			}
+
 			for (int x = xStart; x < xStop; x++)
 			{
 				for (int y = yStart; y < yStop; y++)
@@ -188,7 +193,7 @@ public partial class CellularAutomataEngine : Node2D
 								soil.nutrient += 1.0F;
 							}
 							break;
-						
+
 						case "Fire":
 							elementArray[x, y]?.ignite(elementArray, x, y);
 							break;
@@ -342,6 +347,11 @@ public partial class CellularAutomataEngine : Node2D
 		if (cell is Soil soil)
 		{
 			attributes += $"  Nutrient: {soil.nutrient:F3}\n";
+		}
+
+		if (cell is Spider spider)
+		{
+			attributes += spider.inspectInfo();
 		}
 		
 		return attributes.StripEdges();
