@@ -166,9 +166,9 @@ public partial class CellularAutomataEngine : Node2D
 		{
 			Vector2 pos = GetViewport().GetMousePosition() / cellSize;
 			int xStart = Math.Clamp((int)pos.X - brushSize / 2, 0, gridWidth);
-			int xStop = Math.Clamp((int)pos.X + brushSize / 2 + brushSize % 2 + 1, 0, gridWidth);
+			int xStop = Math.Clamp((int)pos.X + brushSize / 2 + brushSize % 2, 0, gridWidth);
 			int yStart = Math.Clamp((int)pos.Y - brushSize / 2, 0, gridWidth);
-			int yStop = Math.Clamp((int)pos.Y + brushSize / 2 + brushSize % 2 + 1, 0, gridHeight);
+			int yStop = Math.Clamp((int)pos.Y + brushSize / 2 + brushSize % 2, 0, gridHeight);
 
 			if (selectedElement == "Spider" && _drawingState == DrawingState.Drawing) { // special case for spider to avoid creating multiple spiders at once, will need to do for other single entities later
 				elementArray[xStart, yStart] = new Spider();

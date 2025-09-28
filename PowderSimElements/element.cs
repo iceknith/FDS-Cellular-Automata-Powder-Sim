@@ -19,6 +19,7 @@ public abstract class Element
 		set { _wetness = Math.Clamp(value, 0, 1); }  // set method
 	}
 
+
 	protected bool canMoveDownOnElement(Element elementWhereMovement)
 	{
 		return elementWhereMovement == null || elementWhereMovement.density < density;

@@ -2,7 +2,6 @@ extends Node
 
 func _process(_delta: float) -> void:
 	$Control/FPS.text = str(Engine.get_frames_per_second())
-	%BrushSizeLabel.text = ""
 
 func load_file():
 	$FileDialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE

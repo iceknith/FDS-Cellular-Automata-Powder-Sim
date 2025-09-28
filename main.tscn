@@ -1,10 +1,14 @@
-[gd_scene load_steps=4 format=3 uid="uid://clrsw6fo3fdc5"]
+[gd_scene load_steps=5 format=3 uid="uid://clrsw6fo3fdc5"]
 
 [ext_resource type="Script" uid="uid://vdw0sy04gdyy" path="res://main.gd" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://dbvagnprf4hru" path="res://CA-engine/cellular_automata_engine.tscn" id="2_0xm2m"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_0xm2m"]
 allow_unpress = true
+
+[sub_resource type="LabelSettings" id="LabelSettings_0xm2m"]
+outline_size = 3
+outline_color = Color(0, 0, 0, 1)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_0xm2m")
@@ -112,7 +116,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 1
-text = "Brush size"
+text = "Brush size : 1"
 
 [node name="BrushSize" type="HSlider" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
 unique_name_in_owner = true
@@ -121,6 +125,7 @@ layout_mode = 2
 min_value = 1.0
 max_value = 5.0
 value = 1.0
+rounded = true
 tick_count = 6
 
 [node name="GameSpeedLabel" type="Label" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
@@ -160,6 +165,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
+label_settings = SubResource("LabelSettings_0xm2m")
 
 [node name="FileDialog" type="FileDialog" parent="."]
 access = 2
