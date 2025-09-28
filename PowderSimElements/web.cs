@@ -6,6 +6,7 @@ public class Web : Life
 	public (int, int) predecessor;
 	public Web()
 	{
+		ashCreationPercentage = 0.2f;
 		density = 3;
 		color = Colors.White;
 		flammability = 3;

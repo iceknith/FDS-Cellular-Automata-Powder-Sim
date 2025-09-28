@@ -6,6 +6,7 @@ public class Wood : Life
 		density = 1500;
 		color = Colors.Brown;
 		flammability = 10;
+		ashCreationPercentage = 0.8f;
 	}
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{

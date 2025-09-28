@@ -10,6 +10,12 @@ public abstract class Element
 	public double flammability { get; protected set; }
 	public bool burning { get; protected set; } = false; // 0 = not burning, 1 = fully burning
 	public int burningLifetime { get; protected set; } // how long the element has been burning, in ticks
+	private float _ashCreationPercentage = 0.5f;
+	public float ashCreationPercentage // The chance that it turns into ash after burning
+	{
+		get { return _ashCreationPercentage; }   // get method
+		protected set { _ashCreationPercentage = Math.Clamp(value, 0, 1); }  // set method
+	}
 	public RandomNumberGenerator rng = new RandomNumberGenerator();
 	private float _wetness;
 	public float wetness
@@ -119,7 +125,8 @@ public abstract class Element
 		burningLifetime--;
 		if (burningLifetime <= 0 && currentElementArray[x, y] == this)
 		{
-			currentElementArray[x, y] = new Ash(); // element is consumed by fire and turned to ash
+			if (rng.Randf() < ashCreationPercentage) currentElementArray[x, y] = new Ash(); // element is consumed by fire and turned to ash
+			else currentElementArray[x, y] = null; // element is fully destroyed
 		}
 	}
 
