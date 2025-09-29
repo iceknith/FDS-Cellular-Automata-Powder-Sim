@@ -40,7 +40,7 @@ public class Liquid : Element
 	{
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done
 
-		// evaporate if lifetime is over and we are not above another liquid or at the bottom
+		// evaporate if lifetime is over and we are not below another liquid or at the bottom
 		if (lifetime <= 0
 		&& !burning
 		&& (y - 1 == maxY
@@ -52,6 +52,10 @@ public class Liquid : Element
 			return;
 		}
 
+		if (y + 2 < maxY && oldElementArray[x, y + 1] is Leaf)
+		{
+			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, -2); // move down through leaves
+		}
 		// Down movement
 		if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) { lifetime = maxLifetime; return; }
 

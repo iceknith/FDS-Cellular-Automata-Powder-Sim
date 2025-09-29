@@ -2,6 +2,8 @@ using Godot;
 
 public class Water : Liquid
 {
+    private float evaporationChance = 0.0004f; // chance of evaporating each tick if the conditions are right
+
     public Water() : base()
     {
         density = 5;
@@ -33,7 +35,7 @@ public class Water : Liquid
             return;
         }
 
-        if (rng.Randf() < 0.001f && y - 1 > 0 && oldElementArray[x, y - 1] == null) // can add water to the system if wetness < 1
+        if (rng.Randf() < evaporationChance && y - 1 > 0 && oldElementArray[x, y - 1] == null) // can add water to the system if wetness < 1
         {
             onEvaporate(currentElementArray, x, y);
             return;

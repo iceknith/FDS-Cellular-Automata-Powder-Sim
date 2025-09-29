@@ -114,4 +114,9 @@ public class Soil : Powder
 		wetness = stateArgs[0].ToFloat();
 		nutrient = stateArgs[1].ToFloat();
 	}
+
+	override public string inspectInfo()
+	{
+		return base.inspectInfo() + $"  Wetness: {wetness:F3}\n  Nutrient: {nutrient:F3}\n";
+	}
 }

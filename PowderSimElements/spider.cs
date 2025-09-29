@@ -428,18 +428,9 @@ public class Spider : Life
 		return true;
 	}
 
-	public string inspectInfo()
+	override public string inspectInfo()
 	{
-		var recentPosArray = recentPositions.ToArray();
-		string recentPosStr = "";
-		foreach (var pos in recentPosArray)
-		{
-			if (recentPosStr.Length > 0) recentPosStr += ", ";
-			recentPosStr += $"({pos.Item1},{pos.Item2})";
-		}
-		
-		return $"State: {currentState}\n" +
-			$"Recent Positions: [{recentPosStr}]\n" +
+		return base.inspectInfo() + $"State: {currentState}\n" +
 			$"Ticks since last state change: {lastMeaningfulStateChangeTick}\n" +
 			$"On Web: {(onWeb != null ? "Yes" : "No")}\n" +
 			$"Building Direction: ({buildingDirection.Item1}, {buildingDirection.Item2})\n";

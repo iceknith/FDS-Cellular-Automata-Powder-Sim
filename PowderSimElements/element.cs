@@ -84,7 +84,7 @@ public abstract class Element
 			float lerpIntensity = Math.Max(0, (float)Math.Sin((T + (int)rng.Seed) / 10));
 			Color fireHue = Colors.Red.Lerp(Colors.Orange, lerpIntensity);
 			//fireHue = fireHue.Lerp(Colors.DarkOrange, Math.Max(1, 200 / (float)burningLifetime)); // longer burning -> darker fire color
-			color = baseColor.Lerp(fireHue, 0.2f); // blend both effects
+			color = baseColor.Lerp(fireHue, 0.4f); // blend both effects
 		}
 	}
 
@@ -152,12 +152,25 @@ public abstract class Element
 		if (flammability > 0) return burning + ";" + burningLifetime;
 		else return null;
 	}
-	
+
 	virtual public void setState(string state)
 	{
 		string[] stateArgs = state.Split(";", false);
 		burning = stateArgs[0] == "True";
 		burningLifetime = stateArgs[1].ToInt();
+	}
+
+	virtual public string inspectInfo()
+	{
+		string attributes = $"  Flammability: {flammability}\n";
+		attributes += $"  Wetness: {wetness:F3}\n";
+		attributes += $"  Burning: {burning}\n";
+
+		if (burning)
+		{
+			attributes += $"  Burning Lifetime: {burningLifetime}\n";
+		}
+		return attributes;
 	}
 
 }

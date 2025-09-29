@@ -18,7 +18,7 @@ public partial class CellularAutomataEngine : Node2D
 	private DrawingState _drawingState = DrawingState.None;
 
 	// Elements that should only be placed once per click, not continuously
-	private readonly string[] singleClickElements = {"Spider" };
+	private readonly string[] singleClickElements = {"Spider", "Seed"};
 
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently
@@ -388,25 +388,7 @@ public partial class CellularAutomataEngine : Node2D
 		
 		// Build attribute string
 		string attributes = $"Position ({x}, {y}): {className}\n";
-		attributes += $"  Flammability: {cell.flammability}\n";
-		attributes += $"  Wetness: {cell.wetness:F3}\n";
-		attributes += $"  Burning: {cell.burning}\n";
-		
-		if (cell.burning)
-		{
-			attributes += $"  Burning Lifetime: {cell.burningLifetime}\n";
-		}
-		
-		// Add specific attributes for different element types
-		if (cell is Soil soil)
-		{
-			attributes += $"  Nutrient: {soil.nutrient:F3}\n";
-		}
-
-		if (cell is Spider spider)
-		{
-			attributes += spider.inspectInfo();
-		}
+		attributes += cell.inspectInfo();
 		
 		return attributes.StripEdges();
 	}
