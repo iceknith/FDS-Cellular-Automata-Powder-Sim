@@ -25,8 +25,6 @@ public class Spider : Life
 		density = 10;
 		color = Colors.Violet;
 		flammability = 1f;
-		// Ensure each spider has a unique random seed to prevent identical behavior patterns
-		rng.Seed = (ulong)(DateTime.Now.Ticks + GetHashCode());
 	}
 
 	/// <summary>
@@ -46,13 +44,6 @@ public class Spider : Life
 			(0, 1), (1, 1), (1, 0), (1, -1),
 			(0, -1), (-1, -1), (-1, 0), (-1, 1)
 		};
-
-		// Shuffle directions using Fisher-Yates algorithm to eliminate order bias
-		for (int i = directions.Length - 1; i > 0; i--)
-		{
-			int randomIndex = rng.RandiRange(0, i);
-			(directions[i], directions[randomIndex]) = (directions[randomIndex], directions[i]);
-		}
 
 		// Raycast in all directions to see the first solid cell in valid range
 		foreach ((int, int) dir in directions)
@@ -227,7 +218,6 @@ public class Spider : Life
 
 			if (validCells.Count > 0)
 			{
-				// Use proper random selection to avoid any ordering bias
 				int randomIndex = rng.RandiRange(0, validCells.Count - 1);
 				(int, int) targetCell = validCells[randomIndex];
 				specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, targetCell.Item1 - x, targetCell.Item2 - y);
