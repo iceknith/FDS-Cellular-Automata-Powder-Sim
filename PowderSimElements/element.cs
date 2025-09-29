@@ -84,7 +84,7 @@ public abstract class Element
 			float lerpIntensity = Math.Max(0, (float)Math.Sin((T + (int)rng.Seed) / 10));
 			Color fireHue = Colors.Red.Lerp(Colors.Orange, lerpIntensity);
 			//fireHue = fireHue.Lerp(Colors.DarkOrange, Math.Max(1, 200 / (float)burningLifetime)); // longer burning -> darker fire color
-			color = baseColor.Lerp(fireHue, 0.6f); // blend both effects
+			color = baseColor.Lerp(fireHue, 0.2f); // blend both effects
 		}
 	}
 

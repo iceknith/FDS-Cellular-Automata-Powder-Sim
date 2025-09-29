@@ -5,7 +5,7 @@ public class Web : Life
 	private int lifetime = 100 * 60; // ticks
 	public Web()
 	{
-		ashCreationPercentage = 0.2f;
+		ashCreationPercentage = 0.0f;
 		density = 3;
 		color = Colors.White;
 		flammability = 3;
