@@ -8,6 +8,25 @@ public class Gas : Element
 
 	public bool sleeping = false;
 
+	public override bool canMoveUpOnElement(Element elementWhereMovement)
+	{
+		return elementWhereMovement == null || elementWhereMovement.density < density || elementWhereMovement is Gas;
+	}
+
+	override public bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+	{
+		int newX = x + movementX, newY = y + movementY;
+		if (newY < 0 || newY >= maxY || newX < 0 || newX >= maxX) return false; // Prevent moving out of bounds
+
+		if (currentElementArray[newX, newY] is Web)
+		{
+			currentElementArray[x, y] = null;
+			currentElementArray[newX, newY] = this;
+			return true;
+		}  // Webs get destroyed by gases
+		return base.move(oldElementArray, currentElementArray, x, y, maxX, maxY, movementX, movementY);
+	}
+
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (sleeping)

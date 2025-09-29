@@ -22,6 +22,20 @@ public class Liquid : Element
 		currentElementArray[x, y] = null;
 	}
 
+	override public bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+	{
+		int newX = x + movementX, newY = y + movementY;
+		if (newY < 0 || newY >= maxY || newX < 0 || newX >= maxX) return false; // Prevent moving out of bounds (recheck but allows using the base function)
+
+		if (currentElementArray[newX, newY] is Web)
+		{
+			currentElementArray[x, y] = null;
+			currentElementArray[newX, newY] = this;
+			return true;
+		}  // Webs get destroyed by liquids
+		return base.move(oldElementArray, currentElementArray, x, y, maxX, maxY, movementX, movementY);
+	}
+
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (currentElementArray[x, y] != this) return; // Return if a movement has already been done

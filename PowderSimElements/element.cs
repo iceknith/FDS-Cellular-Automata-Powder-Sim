@@ -29,7 +29,7 @@ public abstract class Element
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}
 
-	protected bool canMoveUpOnElement(Element elementWhereMovement)
+	public virtual bool canMoveUpOnElement(Element elementWhereMovement)
 	{
 		return elementWhereMovement == null || elementWhereMovement.density > density;
 	}
@@ -39,7 +39,7 @@ public abstract class Element
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}
 
-	protected bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
+	public virtual bool move(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int movementX, int movementY)
 	{
 		int newX = x + movementX, newY = y + movementY;
 
