@@ -1,10 +1,10 @@
 using System;
-using System.Runtime.InteropServices;
 using Godot;
 
 public class Seed : Life
 {
 	public float nutrient { get; set; }
+	public float maxNutrient = 5f;
 	private int lastGrowthTick = 0;
 	private int growthInterval = 1 * 60; // ticks
 
@@ -25,7 +25,7 @@ public class Seed : Life
 		density = 15;
 		color = Colors.Burlywood;
 		flammability = 4;
-		nutrient = 10f;
+		nutrient = 2f;
 		wetness = 1f;
 	}
 
@@ -68,18 +68,18 @@ public class Seed : Life
 			if (firstLeaf.nutrient < 5f)
 			{
 				float transferAmount = Math.Min(nutrient, 0.5f); // transfer up to 0.5 nutrient per tick
+				transferAmount = Math.Min(transferAmount, firstLeaf.maxNutrient - firstLeaf.nutrient); // don't overfill leaf
 				nutrient -= transferAmount;
 				firstLeaf.nutrient += transferAmount;
-				GD.Print($"Transferring {transferAmount} nutrient to leaf at {startingLeaf}");
 			}
 
 			// same thing with wetness
 			if (firstLeaf.wetness < 1f)
 			{
 				float wetnessTransfer = Math.Min(wetness, 0.5f); // transfer up to 0.5 wetness per tick
+				wetnessTransfer = Math.Min(wetnessTransfer, 1f - firstLeaf.wetness); // don't overfill leaf
 				wetness -= wetnessTransfer;
 				firstLeaf.wetness += wetnessTransfer;
-				GD.Print($"Transferring {wetnessTransfer} wetness to leaf at {startingLeaf}");
 			}
 			
 

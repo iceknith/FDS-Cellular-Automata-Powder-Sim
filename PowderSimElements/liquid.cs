@@ -52,9 +52,10 @@ public class Liquid : Element
 			return;
 		}
 
-		if (y + 2 < maxY && oldElementArray[x, y + 1] is Leaf)
+		if (y + 2 < maxY && oldElementArray[x, y + 1] is Leaf && oldElementArray[x, y + 2] == null)
 		{
-			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, -2); // move down through leaves
+			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 2); // move down through leaves
+			return;
 		}
 		// Down movement
 		if (move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) { lifetime = maxLifetime; return; }

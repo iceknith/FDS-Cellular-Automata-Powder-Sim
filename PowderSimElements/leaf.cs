@@ -14,8 +14,6 @@ public class Leaf : Seed
 		Dying
 	}
 
-	private float maxNutrient = 5f;
-
 	private (int, int) parentSeed;
 	public Leaf((int, int) parentSeed)
 	{
@@ -24,6 +22,8 @@ public class Leaf : Seed
 		color = Colors.Green;
 		flammability = 10;
 		nutrient = 0f;
+		maxNutrient = 5f;
+		wetness = 0f;
 		ashCreationPercentage = 0.8f;
 	}
 	public Seed getParentSeed(Element[,] currentElementArray)
@@ -39,16 +39,17 @@ public class Leaf : Seed
 		if (x < 0 || x >= maxX || y < 0 || y >= maxY) return false;
 		if (currentElementArray[x, y] != null) return false;
 		int adjacentLeaves = 0;
-		(int, int)[] directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
-		foreach (var dir in directions)
+		for (int nx = x - 1; nx <= x + 1; nx++)
 		{
-			int newX = x + dir.Item1;
-			int newY = y + dir.Item2;
-			if (newX >= 0 && newX < maxX && newY >= 0 && newY < maxY)
+			for (int ny = y - 1; ny <= y + 1; ny++)
 			{
-				if (currentElementArray[newX, newY] is Leaf)
+				if ((nx, ny) == (x, y)) continue;
+				if (nx >= 0 && nx < maxX && ny >= 0 && ny < maxY)
 				{
-					adjacentLeaves++;
+					if (currentElementArray[nx, ny] is Leaf)
+					{
+						adjacentLeaves++;
+					}
 				}
 			}
 		}
@@ -58,7 +59,8 @@ public class Leaf : Seed
 
 	public bool growLeaf(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
-		if (nutrient <= 0) return false;
+		if (nutrient < 1) return false;
+		if (wetness < 0.5f) return false;
 		if (y - 1 < 0) return false;
 
 		List<(int, int)> possibleGrowthPositions = [];
@@ -80,6 +82,7 @@ public class Leaf : Seed
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Leaf(parentSeed);
 			childLeafs.Add(chosenPos);
 			nutrient -= 1f;
+			wetness -= 0.5f;
 			return true;
 		}
 		else

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Godot;
 public class Root : Seed
 {
 	private (int, int) parentSeed;
-	private float maxNutrient = 10f;
-
 	private int lastActivity = 0;
 	private int activityInterval = 30;
 	private int lastGrowthTick = 0;
@@ -13,11 +12,13 @@ public class Root : Seed
 	public Root((int, int) parentSeed)
 	{
 		this.parentSeed = parentSeed;
-		density = 15;
+		maxNutrient = 10f;
+		density = 21;
 		color = Colors.Brown;
 		flammability = 10;
 		ashCreationPercentage = 0.8f;
 		nutrient = 0f;
+		wetness = 0f;
 	}
 
 	/// <summary>
@@ -36,7 +37,8 @@ public class Root : Seed
 		// absorb nutrients and wetness from adjacent soil in cardinal directions
 		float absorbedNutrients = 0f;
 		float absorbedWetness = 0f;
-		(int, int)[] directions = new (int, int)[] { (0, -1), (0, 1), (-1, 0), (1, 0) };
+		(int, int)[] directions = [(0, -1), (0, 1), (-1, 0), (1, 0)];
+		
 		foreach (var dir in directions)
 		{
 			int newX = x + dir.Item1;
@@ -45,8 +47,10 @@ public class Root : Seed
 			{
 				if (currentElementArray[newX, newY] is Soil soil)
 				{
-					float availableNutrients = Math.Min(soil.nutrient, maxNutrient);
-					float availableWetness = soil.wetness; // max wetness is 1
+					float availableNutrients = Math.Min(soil.nutrient, maxNutrient - nutrient - absorbedNutrients);
+					availableNutrients = Math.Max(availableNutrients, 0);
+					float availableWetness = Math.Min(soil.wetness, 1f - wetness - absorbedWetness); // max wetness is 1
+					availableWetness = Math.Max(availableWetness, 0);
 
 					soil.nutrient -= availableNutrients / 4;
 					soil.wetness -= availableWetness / 4;
@@ -57,6 +61,10 @@ public class Root : Seed
 			}
 		}
 
+		nutrient += absorbedNutrients;
+		wetness += absorbedWetness;
+		if (absorbedNutrients > 0 || absorbedWetness > 0) return true;
+
 		return false;
 	}
 
@@ -66,9 +74,16 @@ public class Root : Seed
 		Seed seed = getParentSeed(currentElementArray, maxX, maxY);
 		if (seed != null)
 		{
+			if (seed.nutrient >= seed.maxNutrient && seed.wetness >= 1f) return; // parent seed full
+
 			float transferableNutrients = Math.Max(nutrient - 1, 0); // keep at least 1 nutrient in root
+			transferableNutrients = Math.Min(transferableNutrients, seed.maxNutrient - seed.nutrient); // don't overfill seed
+			float transferableWetness = Math.Max(wetness - 0.2f, 0); // keep at least 0.2 wetness in root
+			transferableWetness = Math.Min(transferableWetness, 1f - seed.wetness); // don't overfill seed
 			seed.nutrient += transferableNutrients;
 			nutrient -= transferableNutrients;
+			seed.wetness += transferableWetness;
+			wetness -= transferableWetness;
 		}
 	}
 
@@ -77,16 +92,17 @@ public class Root : Seed
 		if (x < 0 || x >= maxX || y < 0 || y >= maxY) return false;
 		if (currentElementArray[x, y] is not Soil) return false;
 		int adjacentRoots = 0;
-		(int, int)[] directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
-		foreach (var dir in directions)
+		for (int nx = x - 1; nx <= x + 1; nx++)
 		{
-			int newX = x + dir.Item1;
-			int newY = y + dir.Item2;
-			if (newX >= 0 && newX < maxX && newY >= 0 && newY < maxY)
+			for (int ny = y - 1; ny <= y + 1; ny++)
 			{
-				if (currentElementArray[newX, newY] is Root)
+				if ((nx, ny) == (x, y)) continue;
+				if (nx >= 0 && nx < maxX && ny >= 0 && ny < maxY)
 				{
-					adjacentRoots++;
+					if (currentElementArray[nx, ny] is Root)
+					{
+						adjacentRoots++;
+					}
 				}
 			}
 		}
@@ -96,7 +112,8 @@ public class Root : Seed
 
 	public bool growRoot(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
-		if (nutrient <= 0) return false;
+		if (nutrient < 1) return false;
+		if (wetness < 0.5f) return false;
 		if (y + 1 >= maxY) return false;
 
 		List<(int, int)> possibleGrowthPositions = [];
@@ -117,6 +134,7 @@ public class Root : Seed
 			var chosenPos = possibleGrowthPositions[rand.Next(possibleGrowthPositions.Count)]; // found this online
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Root(parentSeed);
 			nutrient -= 1f;
+			wetness -= 0.5f;
 			return true;
 		}
 		else
@@ -138,19 +156,14 @@ public class Root : Seed
 		}
 
 		// take nutrients from soil adjacent to root in cardinal directions
-		if (lastActivity - T >= activityInterval)
+		if (T - lastActivity >= activityInterval)
 		{
 			lastActivity = T;
 			absorbNutrientsAndWetness(currentElementArray, x, y, maxX, maxY);
 			transferNutrientsUpwards(currentElementArray, x, y, maxX, maxY);
-		}
-
-		// Try to grow roots if possible
-		if (T - lastGrowthTick >= growthInterval)
-		{
-			lastGrowthTick = T;
 			growRoot(oldElementArray, currentElementArray, x, y, maxX, maxY);
 		}
+
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
