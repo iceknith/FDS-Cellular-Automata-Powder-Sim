@@ -24,7 +24,7 @@ public abstract class Element
 		set { _wetness = Math.Clamp(value, 0, 1); }  // set method
 	}
 
-	protected bool canMoveDownOnElement(Element elementWhereMovement)
+	public virtual bool canMoveDownOnElement(Element elementWhereMovement)
 	{
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}
@@ -34,7 +34,7 @@ public abstract class Element
 		return elementWhereMovement == null || elementWhereMovement.density > density;
 	}
 
-	protected bool canMoveSideOnElement(Element elementWhereMovement)
+	public virtual bool canMoveSideOnElement(Element elementWhereMovement)
 	{
 		return elementWhereMovement == null || elementWhereMovement.density < density;
 	}

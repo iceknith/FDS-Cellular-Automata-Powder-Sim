@@ -116,6 +116,10 @@ public class Root : Seed
 		if (wetness < 0.5f) return false;
 		if (y + 1 >= maxY) return false;
 
+		Seed parent = getParentSeed(currentElementArray, maxX, maxY);
+		if (parent == null) return false;
+		if (parent?.rootCount >= parent?.maxRootCount) return false;
+
 		List<(int, int)> possibleGrowthPositions = [];
 
 		for (int nx = x - 1; nx <= x + 1; nx++)
@@ -133,6 +137,7 @@ public class Root : Seed
 			var rand = new Random();
 			var chosenPos = possibleGrowthPositions[rand.Next(possibleGrowthPositions.Count)]; // found this online
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Root(parentSeed);
+			parent.rootCount++;
 			nutrient -= 1f;
 			wetness -= 0.5f;
 			return true;
@@ -146,12 +151,12 @@ public class Root : Seed
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		// if parent seed no longer exists, turn into soil with same nutrient and wetness to not lose resources
-		if (getParentSeed(currentElementArray, maxX, maxY) == null)
+		Seed parent = getParentSeed(currentElementArray, maxX, maxY);
+		if (parent == null || parent.plantState == PlantState.Dying)
 		{
-			Soil soil = new Soil();
-			soil.nutrient = nutrient;
-			soil.wetness = wetness;
-			currentElementArray[x, y] = soil;
+			if (rng.Randf() > 0.01f) return; // 99% chance to delay transformation to biomass
+			Biomass biomass = new Biomass(wetness, nutrient);
+			currentElementArray[x, y] = biomass;
 			return;
 		}
 

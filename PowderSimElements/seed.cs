@@ -8,6 +8,15 @@ public class Seed : Life
 	private int lastGrowthTick = 0;
 	private int growthInterval = 1 * 60; // ticks
 
+	public int matureLifetime = 120 * 60; // ticks
+	private int maturityTime;
+
+	public int maxLeafCount;
+	public int leafCount = 0;
+	
+	public int maxRootCount;
+	public int rootCount = 0;
+
 	private (int, int) startingLeaf = (-1, -1);
 	public PlantState plantState = PlantState.Falling;
 
@@ -22,6 +31,8 @@ public class Seed : Life
 	public Seed()
 	{
 		ashCreationPercentage = 0.2f;
+		maxLeafCount = rng.RandiRange(20, 30);
+		maxRootCount = rng.RandiRange(10, 20);
 		density = 15;
 		color = Colors.Burlywood;
 		flammability = 4;
@@ -35,6 +46,7 @@ public class Seed : Life
 		if (y + 1 < maxY && currentElementArray[x, y + 1] is Soil)
 		{
 			currentElementArray[x, y + 1] = new Root((x, y));
+			rootCount ++;
 			nutrient -= 1f;
 			return true;
 		}
@@ -52,6 +64,7 @@ public class Seed : Life
 			currentElementArray[x, y - 1] = new Leaf((x, y));
 			startingLeaf = (x, y - 1);
 			nutrient -= 1f;
+			leafCount++;
 			return (x, y - 1);
 		}
 
@@ -81,7 +94,6 @@ public class Seed : Life
 				wetness -= wetnessTransfer;
 				firstLeaf.wetness += wetnessTransfer;
 			}
-			
 
 		}
 		else
@@ -91,6 +103,7 @@ public class Seed : Life
 	}
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
+		// -- Falling state --
 		if (y + 1 < maxY && plantState == PlantState.Falling)
 		{
 			if (!move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1)) // if cannot fall further
@@ -99,10 +112,12 @@ public class Seed : Life
 			}
 		}
 
+		// -- Seed state --
 		if (plantState == PlantState.Seed && T - lastGrowthTick >= growthInterval)
 		{
 			lastGrowthTick = T;
 			// Try to grow roots first
+			
 			if (!growStartingRoot(currentElementArray, x, y, maxX, maxY))
 			{
 				// try to grow leaves
@@ -114,9 +129,25 @@ public class Seed : Life
 			}
 		}
 
-		if (plantState == PlantState.Growing && nutrient > 0)
+		// -- Growing state --
+		if (plantState == PlantState.Growing && nutrient > 0) // only transfer nutrients if we are in growing phase
 		{
 			transferNutrientsUpwards(currentElementArray, x, y, maxX, maxY);
+		}
+		if (plantState == PlantState.Growing && leafCount >= maxLeafCount)
+		{
+			plantState = PlantState.Mature;
+			maturityTime = T;
+		}
+		
+		// -- Mature state --
+		if (plantState == PlantState.Mature) // stopping transfer of nutrients will stop the growth of leaves
+		{
+			// fruit logic incoming 
+		}
+		if (plantState == PlantState.Mature && T - maturityTime >= matureLifetime)
+		{
+			plantState = PlantState.Dying;
 		}
 
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);

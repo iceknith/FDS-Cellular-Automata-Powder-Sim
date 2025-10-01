@@ -34,11 +34,17 @@ public class Leaf : Seed
 		}
 		return null;
 	}
-	private bool isValidLeafGrowthPosition(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	private bool IsBehindGrowthDirection(int pos, int origin, int dir)
 	{
-		if (x < 0 || x >= maxX || y < 0 || y >= maxY) return false;
-		if (currentElementArray[x, y] != null) return false;
+		return dir != 0 && ((dir > 0 && pos <= origin) || (dir < 0 && pos >= origin));
+	}
+
+	private bool isValidLeafGrowthPosition(Element[,] currentElementArray, int x, int y, int maxX, int maxY, (int, int) growthDir, (int, int) growthOrigin)
+	{
+		if (x < 0 || x >= maxX || y < 0 || y >= maxY) return false; // out of bounds
+		if (currentElementArray[x, y] != null) return false; // must be empty
 		int adjacentLeaves = 0;
+
 		for (int nx = x - 1; nx <= x + 1; nx++)
 		{
 			for (int ny = y - 1; ny <= y + 1; ny++)
@@ -46,6 +52,13 @@ public class Leaf : Seed
 				if ((nx, ny) == (x, y)) continue;
 				if (nx >= 0 && nx < maxX && ny >= 0 && ny < maxY)
 				{
+					// ignore everything behind growth direction
+					if (IsBehindGrowthDirection(nx, growthOrigin.Item1, growthDir.Item1) ||
+						IsBehindGrowthDirection(ny, growthOrigin.Item2, growthDir.Item2))
+					{
+						continue;
+					}
+
 					if (currentElementArray[nx, ny] is Leaf)
 					{
 						adjacentLeaves++;
@@ -53,8 +66,56 @@ public class Leaf : Seed
 				}
 			}
 		}
-		if (adjacentLeaves > 1) return false; // prevent too dense leaf growth
+		if (adjacentLeaves > 0) return false; // prevent too dense leaf growth
 		return true;
+	}
+
+	private int getScoreForGrowthPosition((int, int) pos, int x, int y, int seedX, int seedY)
+	{
+		int score = 0;
+
+		if (pos.Item1 == seedX)
+		{
+			if (Math.Abs(pos.Item2 - seedY) < 10)
+			{
+				score += 30;
+			}
+			else
+			{
+				score = -50;
+				GD.Print($"Rejecting {pos} because too far from seed vertically");
+			}
+		}
+		
+		// Prefer positions closer to the seed
+		//int distToSeed = Math.Abs(pos.Item1 - seedX) + Math.Abs(pos.Item2 - seedY);
+		//score -= distToSeed * 10;
+
+		// Prefer positions higher up
+		//score -= pos.Item2 * 5;
+
+		// Prefer positions more centered above the parent leaf
+		//int distToParent = Math.Abs(pos.Item1 - x);
+		//score -= distToParent * 2;
+
+		return score;
+	}
+	private (int, int) getBestGrowthPosition((int, int)[] possiblePositions, int maxX, int maxY, int x, int y, int seedX, int seedY)
+	{
+		(int, int) bestPos = possiblePositions[0];
+		int bestScore = getScoreForGrowthPosition(bestPos, x, y, seedX, seedY);
+
+		foreach (var pos in possiblePositions)
+		{
+			int score = getScoreForGrowthPosition(pos, x, y, seedX, seedY);
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestPos = pos;
+			}
+		}
+
+		return bestPos;
 	}
 
 	public bool growLeaf(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
@@ -69,7 +130,7 @@ public class Leaf : Seed
 		{
 			for (int ny = y - 1; ny <= y; ny++)
 			{
-				if (isValidLeafGrowthPosition(oldElementArray, nx, ny, maxX, maxY))
+				if (isValidLeafGrowthPosition(oldElementArray, nx, ny, maxX, maxY, (nx - x, ny - y), (x, y))) // ------------------------------------------ 
 				{
 					possibleGrowthPositions.Add((nx, ny));
 				}
@@ -78,9 +139,14 @@ public class Leaf : Seed
 		if (possibleGrowthPositions.Count > 0)
 		{
 			var rand = new Random();
-			var chosenPos = possibleGrowthPositions[rand.Next(possibleGrowthPositions.Count)]; // found this online
+			var chosenPos = getBestGrowthPosition(possibleGrowthPositions.ToArray(), maxX, maxY, x, y, parentSeed.Item1, parentSeed.Item2);
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Leaf(parentSeed);
 			childLeafs.Add(chosenPos);
+			var parent = getParentSeed(currentElementArray);
+			if (parent != null)
+			{
+				parent.leafCount++;
+			}
 			nutrient -= 1f;
 			wetness -= 0.5f;
 			return true;
@@ -122,17 +188,15 @@ public class Leaf : Seed
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		Seed seed = getParentSeed(currentElementArray);
-		if (seed == null && seed?.plantState == PlantState.Dying) // if parent seed is gone or dying, start dying
+		if (seed == null || seed?.plantState == PlantState.Dying) // if parent seed is gone or dying, start dying
 		{
 			leafState = LeafState.Dying;
 		}
 
-		if (leafState == LeafState.Dying && rng.Randf() < 0.1f) // 10% chance to die definitively each tick
+		if (leafState == LeafState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
 		{
-			Soil soil = new Soil();
-			soil.nutrient = nutrient;
-			soil.wetness = wetness;
-			currentElementArray[x, y] = soil;
+			Biomass biomass = new Biomass(wetness, nutrient);
+			currentElementArray[x, y] = biomass;
 			return;
 		}
 		// Try to grow leaves if possible
