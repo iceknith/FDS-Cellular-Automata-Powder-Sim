@@ -108,11 +108,13 @@ public class Soil : Powder
 		return base.getState() + ";" + wetness + ";" + nutrient;
 	}
 
-	override public void setState(string state)
+	override public int setState(string state)
 	{
+		int i = 0;
 		string[] stateArgs = state.Split(";", false);
-		wetness = stateArgs[0].ToFloat();
-		nutrient = stateArgs[1].ToFloat();
+		wetness = stateArgs[i++].ToFloat();
+		nutrient = stateArgs[i++].ToFloat();
+		return i;
 	}
 
 	override public string inspectInfo()

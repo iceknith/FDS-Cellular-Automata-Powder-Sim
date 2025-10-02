@@ -453,14 +453,15 @@ public class Spider : Life
 		+ buildingDirection.Item2;
 	}
 
-	override public void setState(string state)
+	override public int setState(string state)
 	{
-		base.setState(state);
+		int i = base.setState(state);
 		string[] stateArgs = state.Split(";", false);
 		// Beginning at 2, because spider is flammable
-		currentState = (SpiderFSM)stateArgs[2].ToInt();
-		lastMeaningfulStateChangeTick = stateArgs[3].ToInt();
-		buildingDirection.Item1 = stateArgs[5].ToInt();
-		buildingDirection.Item2 = stateArgs[6].ToInt();
+		currentState = (SpiderFSM)stateArgs[i++].ToInt();
+		lastMeaningfulStateChangeTick = stateArgs[i++].ToInt();
+		buildingDirection.Item1 = stateArgs[i++].ToInt();
+		buildingDirection.Item2 = stateArgs[i++].ToInt();
+		return i;
 	}
 }

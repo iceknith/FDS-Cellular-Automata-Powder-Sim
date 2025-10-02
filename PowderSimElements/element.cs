@@ -153,11 +153,13 @@ public abstract class Element
 		else return null;
 	}
 
-	virtual public void setState(string state)
+	virtual public int setState(string state)
 	{
+		int i = 0;
 		string[] stateArgs = state.Split(";", false);
-		burning = stateArgs[0] == "True";
-		burningLifetime = stateArgs[1].ToInt();
+		burning = stateArgs[i++] == "True";
+		burningLifetime = stateArgs[i++].ToInt();
+		return i;
 	}
 
 	virtual public string inspectInfo()

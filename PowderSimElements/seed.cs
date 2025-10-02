@@ -153,7 +153,37 @@ public class Seed : Life
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
-	
+
+    public override string getState()
+    {
+		return base.getState() + ";"
+			+ ";" + wetness
+			+ ";" + nutrient
+			+ ";" + lastGrowthTick
+			+ ";" + maturityTime
+			+ ";" + leafCount
+			+ ";" + rootCount
+			+ ";" + startingLeaf.Item1
+			+ ";" + startingLeaf.Item2
+			+ ";" + (int) plantState;
+    }
+
+	override public int setState(string state)
+	{
+		int i = base.setState(state);;
+		string[] stateArgs = state.Split(";", false);
+		wetness = stateArgs[i++].ToFloat();
+		nutrient = stateArgs[i++].ToFloat();
+		lastGrowthTick = stateArgs[i++].ToInt();
+		maturityTime = stateArgs[i++].ToInt();
+		leafCount = stateArgs[i++].ToInt();
+		rootCount = stateArgs[i++].ToInt();
+		startingLeaf.Item1 = stateArgs[i++].ToInt();
+		startingLeaf.Item2 = stateArgs[i++].ToInt();
+		plantState = (PlantState)stateArgs[i++].ToInt();
+		return i;
+	}
+
 	override public string inspectInfo()
 	{
 		return base.inspectInfo() + $"  Seed Nutrient: {nutrient:F3}\n  Plant State: {plantState}\n";

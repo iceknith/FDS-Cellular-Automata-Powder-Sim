@@ -15,6 +15,9 @@ public class Leaf : Seed
 	}
 
 	private (int, int) parentSeed;
+
+	public Leaf() {} // DO NOT USE EXCEPT IF YOU'RE GONNA SET A STATE RIGHT AFTER
+
 	public Leaf((int, int) parentSeed)
 	{
 		this.parentSeed = parentSeed;
@@ -83,7 +86,7 @@ public class Leaf : Seed
 			else
 			{
 				score = -50;
-				GD.Print($"Rejecting {pos} because too far from seed vertically");
+				//GD.Print($"Rejecting {pos} because too far from seed vertically");
 			}
 		}
 		
@@ -215,7 +218,50 @@ public class Leaf : Seed
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
-	
+
+	override public string getState()
+	{
+		string childLeafText = "";
+		foreach ((int, int) childLeaf in childLeafs) {
+			childLeafText += childLeaf.Item1 + ":" + childLeaf.Item2 + ",";
+		}
+		if (childLeafText == "") childLeafText = "none";
+
+		return base.getState()
+		+ ";" + lastGrowthTick
+		+ ";" + (int)leafState
+		+ ";" + childLeafText
+		+ ";" + parentSeed.Item1
+		+ ";" + parentSeed.Item2;
+		
+	}
+
+	override public int setState(string state)
+	{
+		int i = base.setState(state);
+		string[] stateArgs = state.Split(";", false);
+		lastGrowthTick = stateArgs[i++].ToInt();
+		leafState = (LeafState) stateArgs[i++].ToInt();
+		string childLeafTexts = stateArgs[i++];
+		parentSeed.Item1 = stateArgs[i++].ToInt();
+		parentSeed.Item2 = stateArgs[i++].ToInt();
+
+		//Handle child leafs
+		if (childLeafTexts != "none")
+		{
+			string[] childLeafTextsList = childLeafTexts.Split(",", false);
+			foreach (string childLeafTxt in childLeafTextsList)
+			{
+				string[] coos = childLeafTxt.Split(":", false);
+				childLeafs.Add((coos[0].ToInt(), coos[1].ToInt()));
+			}
+		}
+
+		if (leafState != LeafState.Dying) color = Colors.Green;
+
+		return i;
+	}
+
 	override public string inspectInfo()
 	{
 		return $"  Wetness: {wetness:F3}\n  Nutrient: {nutrient:F3}\n  Leaf State: {leafState}\n  Child Leafs: {childLeafs.Count}\n";

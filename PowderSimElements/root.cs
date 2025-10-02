@@ -9,6 +9,9 @@ public class Root : Seed
 	private int activityInterval = 30;
 	private int lastGrowthTick = 0;
 	private int growthInterval = 2 * 60; // ticks
+
+	public Root() {} // DO NOT USE EXCEPT IF YOU'RE GONNA SET A STATE RIGHT AFTER
+
 	public Root((int, int) parentSeed)
 	{
 		this.parentSeed = parentSeed;
@@ -171,6 +174,26 @@ public class Root : Seed
 
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
+	}
+
+	public override string getState()
+    {
+		return base.getState() + ";"
+			+ ";" + parentSeed.Item1
+			+ ";" + parentSeed.Item2
+			+ ";" + lastActivity
+			+ ";" + lastGrowthTick;
+    }
+
+	override public int setState(string state)
+	{
+		int i = base.setState(state);;
+		string[] stateArgs = state.Split(";", false);
+		parentSeed.Item1 = stateArgs[i++].ToInt();
+		parentSeed.Item2 = stateArgs[i++].ToInt();
+		lastActivity = stateArgs[i++].ToInt();
+		lastGrowthTick = stateArgs[i++].ToInt();
+		return i;
 	}
 	
 	override public string inspectInfo()
