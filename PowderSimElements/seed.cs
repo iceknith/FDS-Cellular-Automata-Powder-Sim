@@ -154,8 +154,8 @@ public class Seed : Life
 		updateColor(T);
 	}
 
-    public override string getState()
-    {
+	public override string getState()
+	{
 		return base.getState() + ";"
 			+ ";" + wetness
 			+ ";" + nutrient
@@ -166,7 +166,7 @@ public class Seed : Life
 			+ ";" + startingLeaf.Item1
 			+ ";" + startingLeaf.Item2
 			+ ";" + (int) plantState;
-    }
+	}
 
 	override public int setState(string state)
 	{

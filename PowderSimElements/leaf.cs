@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 public class Leaf : Seed
 {
 	private int lastGrowthTick = 0;
@@ -76,33 +77,24 @@ public class Leaf : Seed
 	private int getScoreForGrowthPosition((int, int) pos, int x, int y, int seedX, int seedY)
 	{
 		int score = 0;
-
-		if (pos.Item1 == seedX)
-		{
-			if (Math.Abs(pos.Item2 - seedY) < 10)
-			{
-				score += 30;
-			}
-			else
-			{
-				score = -50;
-				//GD.Print($"Rejecting {pos} because too far from seed vertically");
-			}
-		}
 		
-		// Prefer positions closer to the seed
-		//int distToSeed = Math.Abs(pos.Item1 - seedX) + Math.Abs(pos.Item2 - seedY);
-		//score -= distToSeed * 10;
+		// Prefer positions closer to the seed horizontally
+		int distToSeed = Math.Abs(pos.Item1 - seedX);
+		score -= distToSeed * 5;
 
 		// Prefer positions higher up
-		//score -= pos.Item2 * 5;
+		score -= pos.Item2 * 3;
 
 		// Prefer positions more centered above the parent leaf
-		//int distToParent = Math.Abs(pos.Item1 - x);
-		//score -= distToParent * 2;
+		int distToParent = Math.Abs(pos.Item1 - x);
+		score -= distToParent * 2;
+
+		// add or subtract 30% of the score randomly
+		score += (int)(score * (rng.Randf() * 0.6f - 0.3f));
 
 		return score;
 	}
+
 	private (int, int) getBestGrowthPosition((int, int)[] possiblePositions, int maxX, int maxY, int x, int y, int seedX, int seedY)
 	{
 		(int, int) bestPos = possiblePositions[0];
@@ -118,6 +110,13 @@ public class Leaf : Seed
 			}
 		}
 
+		if (bestScore < -100) // Arbitrary threshold to prevent bad growth
+		{
+			GD.Print("No suitable growth position found due to low score.");
+			leafState = LeafState.Sleeping; // to prevent constant growth attempt
+			return (-1, -1);
+		}
+
 		return bestPos;
 	}
 
@@ -129,20 +128,24 @@ public class Leaf : Seed
 
 		List<(int, int)> possibleGrowthPositions = [];
 
-		for (int nx = x - 1; nx <= x + 1; nx++)
+
+		// 3 cardinal growth direction
+		foreach ((int dx, int dy) in new (int, int)[] { (-1, 0), (1, 0), (0, -1) })
 		{
-			for (int ny = y - 1; ny <= y; ny++)
+			int nx = x + dx;
+			int ny = y + dy;
+			if (isValidLeafGrowthPosition(currentElementArray, nx, ny, maxX, maxY, (nx - x, ny - y), (x, y))) // ------------------------------------------ 
 			{
-				if (isValidLeafGrowthPosition(oldElementArray, nx, ny, maxX, maxY, (nx - x, ny - y), (x, y))) // ------------------------------------------ 
-				{
-					possibleGrowthPositions.Add((nx, ny));
-				}
+				possibleGrowthPositions.Add((nx, ny));
 			}
 		}
+
 		if (possibleGrowthPositions.Count > 0)
 		{
 			var rand = new Random();
 			var chosenPos = getBestGrowthPosition(possibleGrowthPositions.ToArray(), maxX, maxY, x, y, parentSeed.Item1, parentSeed.Item2);
+			//var chosenPos = possibleGrowthPositions[rand.Next(possibleGrowthPositions.Count)];
+			if (chosenPos == (-1, -1)) return false; // No valid position found
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Leaf(parentSeed);
 			childLeafs.Add(chosenPos);
 			var parent = getParentSeed(currentElementArray);
