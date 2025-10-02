@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Data;
+using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -438,12 +439,10 @@ public class Spider : Life
 	override public string getState()
 	{
 		string posHistoryStr = "";
-		var posArray = recentPositions.ToArray();
-		for (int i = 0; i < posArray.Length; i++)
-		{
-			if (i > 0) posHistoryStr += ",";
-			posHistoryStr += $"{posArray[i].Item1}_{posArray[i].Item2}";
+		foreach ((int, int) childLeaf in recentPositions) {
+			posHistoryStr += childLeaf.Item1 + ":" + childLeaf.Item2 + ",";
 		}
+		if (posHistoryStr == "") posHistoryStr = "none";
 		
 		return base.getState() + ";"
 		+ (int) currentState + ";"
@@ -460,8 +459,21 @@ public class Spider : Life
 		// Beginning at 2, because spider is flammable
 		currentState = (SpiderFSM)stateArgs[i++].ToInt();
 		lastMeaningfulStateChangeTick = stateArgs[i++].ToInt();
+		string posHistoryStr = stateArgs[i++];
 		buildingDirection.Item1 = stateArgs[i++].ToInt();
 		buildingDirection.Item2 = stateArgs[i++].ToInt();
+
+		//Handle pos history
+		if (posHistoryStr != "none")
+		{
+			string[] posHistoryList = posHistoryStr.Split(",", false);
+			foreach (string pos in posHistoryList.Reverse()) // Reading in reverse to simulate the 
+			{
+				string[] coos = pos.Split(":", false);
+				recentPositions.Enqueue((coos[0].ToInt(), coos[1].ToInt()));
+			}
+		}
+
 		return i;
 	}
 }
