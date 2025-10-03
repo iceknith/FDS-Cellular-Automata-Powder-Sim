@@ -126,6 +126,13 @@ button_group = SubResource("ButtonGroup_0xm2m")
 text = "SNAIL"
 metadata/element = "Snail"
 
+[node name="Fly" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_0xm2m")
+text = "FLY"
+metadata/element = "Fly"
+
 [node name="Worm" type="Button" parent="Control/VBoxContainer/HBoxContainer/ElementContainer"]
 layout_mode = 2
 toggle_mode = true

@@ -193,11 +193,17 @@ public class Spider : Life
 			{
 				if ((nx, ny) == (x, y)) { continue; }
 
+				if (oldElementArray[nx, ny] is Fly)
+				{
+					// eat the fly
+					currentElementArray[nx, ny] = new Web();
+				}
+
 				// Check if there's a web in the old array (what we're reading from)
 				if (oldElementArray[nx, ny] is Web web)
 				{
 					web.resetLifetime(); // the spider is taking care of adjacent webs (awww so cute)
-					// Check if the current array position is either empty or has a web (safe to move)
+										 // Check if the current array position is either empty or has a web (safe to move)
 					Element currentTarget = currentElementArray[nx, ny];
 					if (currentTarget == null || currentTarget is Web)
 					{

@@ -3,7 +3,6 @@ using Godot;
 
 public class Seed : Life
 {
-	public float nutrient { get; set; }
 	public float maxNutrient = 5f;
 	private int lastGrowthTick = 0;
 	private int growthInterval = 1 * 60; // ticks
@@ -16,6 +15,8 @@ public class Seed : Life
 	
 	public int maxRootCount;
 	public int rootCount = 0;
+
+	public int maxFruitCount;
 
 	private (int, int) startingLeaf = (-1, -1);
 	public PlantState plantState = PlantState.Falling;
@@ -33,6 +34,7 @@ public class Seed : Life
 		ashCreationPercentage = 0.2f;
 		maxLeafCount = rng.RandiRange(20, 30);
 		maxRootCount = rng.RandiRange(10, 20);
+		maxFruitCount = rng.RandiRange(1, 3);
 		density = 15;
 		color = Colors.Burlywood;
 		flammability = 4;
@@ -117,6 +119,11 @@ public class Seed : Life
 		{
 			lastGrowthTick = T;
 			// Try to grow roots first
+			if (y + 1 < maxY && currentElementArray[x, y + 1] is not Soil)
+			{
+				plantState = PlantState.Dying; // no soil below, die. Poor thing :(
+				return;
+			}
 			
 			if (!growStartingRoot(currentElementArray, x, y, maxX, maxY))
 			{
