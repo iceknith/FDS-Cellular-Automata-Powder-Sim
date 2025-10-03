@@ -17,7 +17,7 @@ public class Root : Seed
 		this.parentSeed = parentSeed;
 		maxNutrient = 10f;
 		density = 21;
-		color = Colors.Brown;
+		color = Colors.SandyBrown;
 		flammability = 10;
 		ashCreationPercentage = 0.8f;
 		nutrient = 0f;
@@ -158,7 +158,7 @@ public class Root : Seed
 		if (parent == null || parent.plantState == PlantState.Dying)
 		{
 			if (rng.Randf() > 0.01f) return; // 99% chance to delay transformation to biomass
-			Biomass biomass = new Biomass(wetness, nutrient);
+			Biomass biomass = new Biomass(wetness + 0.5f, nutrient + 1f);
 			currentElementArray[x, y] = biomass;
 			return;
 		}

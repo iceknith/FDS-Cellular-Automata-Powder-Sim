@@ -74,23 +74,27 @@ public class Leaf : Seed
 		return true;
 	}
 
-	private int getScoreForGrowthPosition((int, int) pos, int x, int y, int seedX, int seedY)
+	private int getScoreForGrowthPosition((int, int) pos, int parentX, int parentY, int seedX, int seedY)
 	{
 		int score = 0;
+		int badScore = 0; // if all possible positions are under this score, the leaf will go permanently to sleep
+
+		// Prefer growing upwards
+		if (pos.Item2 < parentY) score += 30;
 		
 		// Prefer positions closer to the seed horizontally
 		int distToSeed = Math.Abs(pos.Item1 - seedX);
 		score -= distToSeed * 5;
 
 		// Prefer positions higher up
-		score -= pos.Item2 * 3;
+		score += Math.Abs(pos.Item2 - seedY) * 5;
 
-		// Prefer positions more centered above the parent leaf
-		int distToParent = Math.Abs(pos.Item1 - x);
-		score -= distToParent * 2;
-
-		// add or subtract 30% of the score randomly
-		score += (int)(score * (rng.Randf() * 0.6f - 0.3f));
+		// add or subtract 30% of the score randomly, but that variation can not dip a passing score below the badScore (to prevent softlock)
+		int variation = (int)(score * (rng.Randf() * 0.6f - 0.3f));
+		if (score > badScore)
+		{
+			score = Math.Max(score + variation, badScore);
+		}
 
 		return score;
 	}
@@ -110,9 +114,9 @@ public class Leaf : Seed
 			}
 		}
 
-		if (bestScore < -100) // Arbitrary threshold to prevent bad growth
+		if (bestScore < 0) // Arbitrary threshold to prevent bad growth
 		{
-			GD.Print("No suitable growth position found due to low score.");
+			//GD.Print("No suitable growth position found due to low score. bestScore: " + bestScore);
 			leafState = LeafState.Sleeping; // to prevent constant growth attempt
 			return (-1, -1);
 		}
@@ -201,7 +205,7 @@ public class Leaf : Seed
 
 		if (leafState == LeafState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
 		{
-			Biomass biomass = new Biomass(wetness, nutrient);
+			SurfBiomass biomass = new SurfBiomass(wetness + 0.5f, nutrient + 1f); // add the creation nutrient and wetness
 			currentElementArray[x, y] = biomass;
 			return;
 		}

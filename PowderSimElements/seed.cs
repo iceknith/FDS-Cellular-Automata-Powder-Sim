@@ -150,6 +150,14 @@ public class Seed : Life
 			plantState = PlantState.Dying;
 		}
 
+		// -- Dying state --
+		if (plantState == PlantState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
+		{
+			SurfBiomass biomass = new SurfBiomass(wetness, nutrient); // add the creation nutrient and wetness
+			currentElementArray[x, y] = biomass;
+			return;
+		}
+
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}

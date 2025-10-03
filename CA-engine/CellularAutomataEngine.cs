@@ -18,7 +18,7 @@ public partial class CellularAutomataEngine : Node2D
 	private DrawingState _drawingState = DrawingState.None;
 
 	// Elements that should only be placed once per click, not continuously
-	private readonly string[] singleClickElements = {"Spider", "Seed"};
+	private readonly string[] singleClickElements = {"Spider", "Seed", "Worm", "Snail"};
 
 	private ButtonGroup buttonGroup;
 	public string selectedElement; // TODO idk how to do differently

@@ -1,15 +1,13 @@
 using Godot;
 using System;
-using System.Data;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+
 public class Spider : Life
 {
 	public int sleepTime = 5; // ticks to sleep between actions, to slow down the spider
 	private (int, int) buildingDirection;
-	private System.Collections.Generic.Queue<(int, int)> recentPositions = new System.Collections.Generic.Queue<(int, int)>();
+	private Queue<(int, int)> recentPositions = new Queue<(int, int)>();
 	private const int MAX_POSITION_HISTORY = 3; // Keep track of last 3 positions to prevent backtracking
 	private int lastMeaningfulStateChangeTick = 0; // To prevent rapid state changes
 	private Web onWeb;
@@ -109,7 +107,7 @@ public class Spider : Life
 		return recentPositions.Contains((x, y));
 	}
 
-	private System.Collections.Generic.List<T> filterRecentPositions<T>(System.Collections.Generic.List<T> cells, System.Func<T, (int, int)> getPosition)
+	private List<T> filterRecentPositions<T>(List<T> cells, System.Func<T, (int, int)> getPosition)
 	{
 		return cells.FindAll(cell => !isRecentPosition(getPosition(cell).Item1, getPosition(cell).Item2));
 	}
@@ -167,7 +165,15 @@ public class Spider : Life
 		else
 		{
 			// Continue falling
-			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1);
+			if (y + 1 < maxY && (currentElementArray[x, y + 1] == null || currentElementArray[x, y + 1] is Web))
+			{
+				specialMove(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1);
+				if (onWeb != null)
+				{
+					// Fell onto a web, transition to wandering on web
+					transitionToWanderingOnWeb(T);
+				}
+			}
 		}
 	}
 
@@ -180,7 +186,7 @@ public class Spider : Life
 		}
 
 		// Collect all adjacent web cells where we can move
-		var availableWebCells = new System.Collections.Generic.List<(int, int)>();
+		var availableWebCells = new List<(int, int)>();
 		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++) // including diagonals
 		{
 			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
@@ -244,7 +250,7 @@ public class Spider : Life
 		}
 
 		// get all available cells with webs or that are empty
-		var availableCellsList = new System.Collections.Generic.List<(int, int)>();
+		var availableCellsList = new List<(int, int)>();
 		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++)
 		{
 			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
