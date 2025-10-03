@@ -5,7 +5,11 @@ public class Worm : Life
 	int lastActivity = 0;
 	int activityInterval = 10;
 
-	private Queue<(int, int)> recentPositions = new();
+	// Direction and movement properties
+	private (int, int) currentDirection = (1, 0); // Start moving right
+	private int directionChangeTimer = 0;
+	private int directionChangeInterval = 10; // Change direction every 10 ticks (on average)
+	private int obstacleHitCooldown = 0; // Prevent immediate oscillation after hitting obstacle
 
 	Soil inSoil = null;
 	public Worm()
@@ -54,33 +58,30 @@ public class Worm : Life
 				break;
 
 			case WormState.Moving:
-				// try to move in a random direction on the surface
-				List<(int, int)> possibleDirs = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-				// shuffle directions
-				for (int i = 0; i < possibleDirs.Count; i++)
+				// Update timers
+				directionChangeTimer++;
+				if (obstacleHitCooldown > 0)
+					obstacleHitCooldown--;
+				
+				// Random direction change
+				if (directionChangeTimer >= directionChangeInterval && rng.Randf() < 0.3f)
 				{
-					int j = rng.RandiRange(0, possibleDirs.	Count - 1);
-					(possibleDirs[i], possibleDirs[j]) = (possibleDirs[j], possibleDirs[i]);
+					changeDirection();
+					directionChangeTimer = 0;
 				}
 
-				foreach ((int, int) dir in possibleDirs)
+				// Try to move in current direction
+				if (tryMoveInDirection(currentElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2))
 				{
-					if (x + dir.Item1 < 0 || x + dir.Item1 >= maxX || y + dir.Item2 < 0 || y + dir.Item2 >= maxY)
-						continue; // out of bounds
-
-					if (currentElementArray[x + dir.Item1, y + dir.Item2] is Biomass biomass) // try to eat biomass
-					{
-						consumeBiomass(currentElementArray, x + dir.Item1, y + dir.Item2);
-						specialMove(currentElementArray, x, y, maxX, maxY, dir.Item1, dir.Item2);
-						break;
-					}
-
-					if (currentElementArray[x + dir.Item1, y + dir.Item2] is Soil
-					&& specialMove(currentElementArray, x, y, maxX, maxY, dir.Item1, dir.Item2)
-					&& !recentPositions.Contains((x + dir.Item1, y + dir.Item2))) // try to move onto soil
-					{
-						break;
-					}
+					// Successfully moved
+					break;
+				}
+				else if (obstacleHitCooldown == 0)
+				{
+					// Hit obstacle, change direction
+					obstacleHitCooldown = 3;
+					changeDirection();
+					directionChangeTimer = 0;
 				}
 				
 				break;
@@ -91,13 +92,41 @@ public class Worm : Life
 		updateColor(T);
 	}
 
-	private void addToPositionHistory(int x, int y)
+	private void changeDirection()
 	{
-		recentPositions.Enqueue((x, y));
-		if (recentPositions.Count > 6) // keep only last 6 positions
+		// Simple direction change with upward bias
+		float rand = rng.Randf();
+		
+		// 40% chance to go up, 20% each for other directions
+		if (rand < 0.4f)
+			currentDirection = (0, -1); // up
+		else if (rand < 0.6f)
+			currentDirection = (-1, 0); // left
+		else if (rand < 0.8f)
+			currentDirection = (1, 0); // right
+		else
+			currentDirection = (0, 1); // down
+	}
+
+	private bool tryMoveInDirection(Element[,] currentElementArray, int x, int y, int maxX, int maxY, int dirX, int dirY)
+	{
+		if (x + dirX < 0 || x + dirX >= maxX || y + dirY < 0 || y + dirY >= maxY)
+			return false; // out of bounds
+
+		// Try to eat biomass first
+		if (currentElementArray[x + dirX, y + dirY] is Biomass biomass)
 		{
-			recentPositions.Dequeue();
+			consumeBiomass(currentElementArray, x + dirX, y + dirY);
+			return specialMove(currentElementArray, x, y, maxX, maxY, dirX, dirY);
 		}
+
+		// Try to move onto soil
+		if (currentElementArray[x + dirX, y + dirY] is Soil)
+		{
+			return specialMove(currentElementArray, x, y, maxX, maxY, dirX, dirY);
+		}
+
+		return false;
 	}
 
 	public void consumeBiomass(Element[,] currentElementArray, int x, int y)
@@ -155,14 +184,13 @@ public class Worm : Life
 
 		// Move worm to new position
 		currentElementArray[targetX, targetY] = this;
-		addToPositionHistory(x, y); // Add the old position to history
 
 		return true;
 	}
 
 	public override string inspectInfo()
 	{
-		return base.inspectInfo() + $"\nState: {wormState} \nRecent Positions: {string.Join("-", recentPositions)}";
+		return base.inspectInfo() + $"\nState: {wormState} \nDirection: ({currentDirection.Item1}, {currentDirection.Item2}) \nDirection Timer: {directionChangeTimer}/{directionChangeInterval} \nObstacle Cooldown: {obstacleHitCooldown}";
 	}
 
 }

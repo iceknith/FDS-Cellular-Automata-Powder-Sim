@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 
 public class Soil : Powder
 {
+	int lastActivity = 0;
+	int activityInterval = 15;
 	public (int, int)[] cardinals = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 	new private Color baseColor = Color.FromHtml("#8d7267ff");
 	private Color wetColor = Color.FromHtml("#3a1008ff");
@@ -37,6 +39,15 @@ public class Soil : Powder
 
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
+		if (T - lastActivity < activityInterval)
+		{
+			base.update(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
+			return;
+		}
+		else
+		{
+			lastActivity = T;
+		}
 
 		// Handle nutrient diffusion (uniform in all directions)
 		for (int nx = Math.Max(0, x - 1); nx < Math.Min(x + 1, maxX); nx++) // including diagonals
