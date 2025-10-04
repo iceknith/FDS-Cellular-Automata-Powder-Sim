@@ -134,9 +134,10 @@ public class Snail : Life
 				if (currentElementArray[nx, ny] is Soil adjacentSoil)
 				{
 					adjacentSoil.nutrient += storedNutrient;
-					adjacentSoil.wetness += storedWetness;
+					float transferableWetness = Math.Min(storedWetness, 1f - adjacentSoil.wetness);
+					adjacentSoil.wetness += transferableWetness;
 					storedNutrient = 0;
-					storedWetness = 0;
+					storedWetness = -transferableWetness;
 					return;
 				}
 			}
