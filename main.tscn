@@ -197,6 +197,11 @@ rounded = true
 tick_count = 11
 ticks_on_borders = true
 
+[node name="SkipTimeButton" type="Button" parent="Control/VBoxContainer/HBoxContainer/Sliders"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Skip time"
+
 [node name="HSeparator" type="HSeparator" parent="Control/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 25
@@ -227,5 +232,6 @@ use_native_dialog = true
 
 [connection signal="value_changed" from="Control/VBoxContainer/HBoxContainer/Sliders/BrushSize" to="." method="_on_brush_size_value_changed"]
 [connection signal="value_changed" from="Control/VBoxContainer/HBoxContainer/Sliders/GameSpeed" to="." method="_on_game_speed_value_changed"]
+[connection signal="pressed" from="Control/VBoxContainer/HBoxContainer/Sliders/SkipTimeButton" to="CellularAutomataEngine" method="_on_skip_time_button_pressed"]
 [connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Load" to="." method="load_file"]
 [connection signal="pressed" from="Control/VBoxContainer/SaveLoadContainer/Save" to="." method="save_file"]

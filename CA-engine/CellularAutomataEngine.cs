@@ -449,6 +449,14 @@ public partial class CellularAutomataEngine : Node2D
 
 		return totalNutrient;
 	}
+
+	public void _on_skip_time_button_pressed()
+	{
+		for (int i = 0; i < 10000; i++)
+		{
+			CellUpdateHandler();
+		}
+	}
 	
 	private enum DrawingState
 	{
