@@ -3,6 +3,8 @@ using System.Collections.Generic;
 public class Fly : Life
 {
 	int lastActivity = 0;
+
+	int lifetime = 300 * 60; // ticks
 	int activityInterval = 5;
 
 	// Direction and movement properties
@@ -11,7 +13,7 @@ public class Fly : Life
 	private int directionChangeInterval = 6; // Change direction every 6 activity ticks (on average)
 
 	public bool stuckInWeb = false;
-	private int stuckInWebDuration = 60 * 60; // ticks
+	private int stuckInWebDuration = 20 * 60; // ticks
 	private int stuckInWebTime = 0;
 	public Fly()
 	{
@@ -22,6 +24,13 @@ public class Fly : Life
 	}
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
+		lifetime--;
+		if (lifetime <= 0 && currentElementArray[x, y] == this)
+		{
+			currentElementArray[x, y] = null;
+			return;
+		}
+		
 		if (T - lastActivity < activityInterval)
 		{
 			// Not time to act yet
@@ -38,7 +47,7 @@ public class Fly : Life
 			if (T - stuckInWebTime > stuckInWebDuration)
 			{
 				stuckInWeb = false; // free from web after duration
-				tryMoveInDirection(currentElementArray, x, y, maxX, maxY, 0, -1, T); // try to move up out of web
+				tryMoveInDirection(currentElementArray, oldElementArray, x, y, maxX, maxY, 0, -1, T); // try to move up out of web
 			}
 			burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 			updateColor(T);
@@ -52,11 +61,11 @@ public class Fly : Life
 			directionChangeTimer = rng.RandiRange(0, directionChangeInterval-1); // reset timer with some randomness
 			changeDirection();
 		}
-		if (!tryMoveInDirection(currentElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2, T))
+		if (!tryMoveInDirection(currentElementArray, oldElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2, T))
 		{
 			// Try to change direction if blocked
 			changeDirection();
-			tryMoveInDirection(currentElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2, T);
+			tryMoveInDirection(currentElementArray, oldElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2, T);
 		}
 
 		for (int dx = -1; dx <= 1; dx++)
@@ -110,7 +119,7 @@ public class Fly : Life
 			currentDirection = (1, 1); // down-right
 	}
 
-	private bool tryMoveInDirection(Element[,] currentElementArray, int x, int y, int maxX, int maxY, int dirX, int dirY, int T)
+	private bool tryMoveInDirection(Element[,] currentElementArray, Element[,] oldElementArray, int x, int y, int maxX, int maxY, int dirX, int dirY, int T)
 	{
 		if (x + dirX < 0 || x + dirX >= maxX || y + dirY < 0 || y + dirY >= maxY)
 			return false; // out of bounds

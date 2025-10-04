@@ -116,7 +116,7 @@ public class Root : Seed
 	public bool growRoot(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 		if (nutrient < 1) return false;
-		if (wetness < 0.5f) return false;
+		if (wetness < 0.2f) return false;
 		if (y + 1 >= maxY) return false;
 
 		Seed parent = getParentSeed(currentElementArray, maxX, maxY);
@@ -142,7 +142,7 @@ public class Root : Seed
 			currentElementArray[chosenPos.Item1, chosenPos.Item2] = new Root(parentSeed);
 			parent.rootCount++;
 			nutrient -= 1f;
-			wetness -= 0.5f;
+			wetness -= 0.2f;
 			return true;
 		}
 		else
@@ -158,7 +158,7 @@ public class Root : Seed
 		if (parent == null || parent.plantState == PlantState.Dying)
 		{
 			if (rng.Randf() > 0.01f) return; // 99% chance to delay transformation to biomass
-			Biomass biomass = new Biomass(wetness + 0.5f, nutrient + 1f);
+			Biomass biomass = new Biomass(wetness + 0.4f, nutrient + 1f);
 			currentElementArray[x, y] = biomass;
 			return;
 		}

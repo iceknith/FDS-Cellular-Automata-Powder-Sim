@@ -28,7 +28,7 @@ public class Snail : Life
 	public Snail()
 	{
 		ashCreationPercentage = 0.0f;
-		density = 35;
+		density = 60;
 		color = Colors.Beige;
 		flammability = 3;
 	}
@@ -213,12 +213,6 @@ public class Snail : Life
 
 	private void handleMovingState(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
-		// First check if we still have a solid surface to climb on
-		if (!hasAdjacentSolidSurface(x, y, oldElementArray, maxX, maxY))
-		{
-			snailState = SnailState.Falling;
-			return;
-		}
 
 		// small chance to stay idle instead of moving
 		if (rng.Randf() < 0.02f)
@@ -258,15 +252,8 @@ public class Snail : Life
 			// No valid moves available
 			lastPositions.Clear(); // reset history when stuck
 			
-			// Check if we should fall (no solid surface to stay on)
-			if (!hasAdjacentSolidSurface(x, y, oldElementArray, maxX, maxY))
-			{
-				snailState = SnailState.Falling;
-			}
-			else
-			{
-				snailState = SnailState.Idle; // couldn't move but still on solid surface
-			}
+
+			snailState = SnailState.Idle; // couldn't move but still on solid surface
 			return;
 		}
 
@@ -312,7 +299,7 @@ public class Snail : Life
 				
 				Element neighbor = elementArray[nx, ny];
 				if (neighbor != null && !(neighbor is Liquid) && !(neighbor is Web) && !(neighbor is Gas) 
-					&& !(neighbor is Snail))
+					&& !(neighbor is Snail) && !(neighbor is Fly))
 				{
 					return true; // Found a solid surface that can support climbing
 				}

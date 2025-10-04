@@ -12,7 +12,8 @@ public class Spider : Life
 	private int lastMeaningfulStateChangeTick = 0; // To prevent rapid state changes
 
 	private int lastFlyEatTick = 0; // ticks until can eat another fly
-	private Web onWeb;
+	private int flyEatingCooldown = 60 * 60; // ticks between eating flies
+	private Web onWeb; 
 	private SpiderFSM currentState = SpiderFSM.FALLING;
 	public enum SpiderFSM
 	{
@@ -199,7 +200,7 @@ public class Spider : Life
 			{
 				if ((nx, ny) == (x, y)) { continue; }
 
-				if (oldElementArray[nx, ny] is Fly fly && T - lastFlyEatTick > 75 * 10) // can eat a fly every 75 ticks
+				if (oldElementArray[nx, ny] is Fly fly && T - lastFlyEatTick > flyEatingCooldown) // can eat a fly every so often
 				{
 					lastFlyEatTick = T;
 					// eat the fly
