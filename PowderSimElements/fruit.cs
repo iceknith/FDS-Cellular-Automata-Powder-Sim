@@ -12,11 +12,20 @@ public class Fruit : Life
 		flammability = 3;
 	}
 
+    public override void updateColor(int T)
+    {
+		if (pollinated)
+		{
+			color = Colors.DarkRed;
+		}
+        base.updateColor(T);
+    }
+
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
-		if (y + 1 !< maxY) return; // out of bounds below
+		if (y + 1 >= maxY) return; // out of bounds below
 
-		if (oldElementArray[x, y + 1] is Soil)
+		if (oldElementArray[x, y + 1] is not Leaf)
 		{
 			lifetimeOnSoil--;
 		}
@@ -30,7 +39,26 @@ public class Fruit : Life
 
 		if (currentElementArray[x, y + 1] == null || currentElementArray[x, y + 1] is Gas || currentElementArray[x, y + 1] is Liquid)
 		{
+
+			// chance to strafe left or right while falling
+			if (rng.Randf() < 0.4f)
+			{
+				if (rng.RandiRange(0, 1) == 0)
+				{
+					if (x - 1 >= 0 && (currentElementArray[x - 1, y + 1] == null || currentElementArray[x - 1, y + 1] is Gas || currentElementArray[x - 1, y + 1] is Liquid))
+						move(oldElementArray, currentElementArray, x, y, maxX, maxY, -1, 0);
+					return;
+				}
+				else
+				{
+					if (x + 1 < maxX && (currentElementArray[x + 1, y + 1] == null || currentElementArray[x + 1, y + 1] is Gas || currentElementArray[x + 1, y + 1] is Liquid))
+						move(oldElementArray, currentElementArray, x, y, maxX, maxY, 1, 0);
+					return;
+				}
+			}
+
 			move(oldElementArray, currentElementArray, x, y, maxX, maxY, 0, 1);
+			return;
 		}
 
 		// if polliated and on soil, try to grow a seed
@@ -47,6 +75,12 @@ public class Fruit : Life
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
+
+	public override string inspectInfo()
+	{
+		return base.inspectInfo() + $"Pollinated: {pollinated}\nLifetime on soil: {lifetimeOnSoil / 60} seconds\n";
+	}
+
 
 
 }

@@ -1,5 +1,4 @@
 using Godot;
-using System.Collections.Generic;
 public class Worm : Life
 {
 	int lastActivity = 0;
@@ -58,16 +57,23 @@ public class Worm : Life
 				break;
 
 			case WormState.Moving:
+				// Try to eat nearby biomass first
+				if (eatNearbyBiomass(currentElementArray, x, y, maxX, maxY))
+				{
+					// Successfully ate biomass and moved
+					break;
+				}
+
 				// Update timers
 				directionChangeTimer++;
 				if (obstacleHitCooldown > 0)
 					obstacleHitCooldown--;
 				
 				// Random direction change
-				if (directionChangeTimer >= directionChangeInterval && rng.Randf() < 0.3f)
+				if (directionChangeTimer >= directionChangeInterval)
 				{
 					changeDirection();
-					directionChangeTimer = 0;
+					directionChangeTimer = rng.RandiRange(0, directionChangeInterval / 2); // reset timer to a random value to avoid synchronized direction changes
 				}
 
 				// Try to move in current direction
@@ -83,7 +89,8 @@ public class Worm : Life
 					changeDirection();
 					directionChangeTimer = 0;
 				}
-				
+
+
 				break;
 		}
 
@@ -91,12 +98,33 @@ public class Worm : Life
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
+	
+	private bool eatNearbyBiomass(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	{
+		// Check adjacent cells for biomass
+		foreach ((int dx, int dy) in new (int, int)[] { (0, -1), (0, 1), (-1, 0), (1, 0) })
+		{
+			int nx = x + dx;
+			int ny = y + dy;
+
+			if (nx < 0 || nx >= maxX || ny < 0 || ny >= maxY)
+				continue; // Out of bounds
+
+			if (currentElementArray[nx, ny] is Biomass)
+			{
+				consumeBiomass(currentElementArray, nx, ny);
+				specialMove(currentElementArray, x, y, maxX, maxY, dx, dy); // Move into the eaten biomass spot
+				return true; // Eat only one biomass per update
+			}
+		}
+		return false;
+	}
 
 	private void changeDirection()
 	{
 		// Simple direction change with upward bias
 		float rand = rng.Randf();
-		
+
 		// 40% chance to go up, 20% each for other directions
 		if (rand < 0.4f)
 			currentDirection = (0, -1); // up
@@ -112,13 +140,6 @@ public class Worm : Life
 	{
 		if (x + dirX < 0 || x + dirX >= maxX || y + dirY < 0 || y + dirY >= maxY)
 			return false; // out of bounds
-
-		// Try to eat biomass first
-		if (currentElementArray[x + dirX, y + dirY] is Biomass biomass)
-		{
-			consumeBiomass(currentElementArray, x + dirX, y + dirY);
-			return specialMove(currentElementArray, x, y, maxX, maxY, dirX, dirY);
-		}
 
 		// Try to move onto soil
 		if (currentElementArray[x + dirX, y + dirY] is Soil)

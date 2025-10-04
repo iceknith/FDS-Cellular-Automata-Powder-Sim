@@ -5,7 +5,7 @@ public class Steam : Gas
 	public Steam() : base()
 	{
 		density = 1;
-		color = Colors.WhiteSmoke;
+		color = new Color(Colors.WhiteSmoke.R, Colors.WhiteSmoke.G, Colors.WhiteSmoke.B, 0.05f);
 		flammability = 0;
 		wetness = 1.0f;
 	}

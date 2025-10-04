@@ -168,6 +168,8 @@ public partial class CellularAutomataEngine : Node2D
 		brushSize = (int)brushSizeSlider.Value;
 
 		((Label)GetNode("%InspectLabel")).Text = GetCellInfoAtCursor();
+		((Label)GetNode("%WetnessLabel")).Text = $"Total Wetness: {GetTotalWetness():F2}";
+		((Label)GetNode("%NutrientLabel")).Text = $"Total Nutrient: {GetTotalNutrient():F2}";
 	}
 
 	private void PlacementHandler()
@@ -409,6 +411,43 @@ public partial class CellularAutomataEngine : Node2D
 		}
 
 		return totalWetness;
+	}
+
+	public float GetTotalNutrient()
+	{
+		float totalNutrient = 0f;
+
+		for (int x = 0; x < gridWidth; x++)
+		{
+			for (int y = 0; y < gridHeight; y++)
+			{
+				if (elementArray[x, y] != null)
+				{
+					if (elementArray[x, y] is Biomass biomass)
+					{
+						totalNutrient += biomass.nutrient;
+					}
+					else if (elementArray[x, y] is Soil soil)
+					{
+						totalNutrient += soil.nutrient;
+					}
+					else if (elementArray[x, y] is Leaf leaf)
+					{
+						totalNutrient += leaf.nutrient;
+					}
+					else if (elementArray[x, y] is Fruit fruit)
+					{
+						totalNutrient += fruit.nutrient;
+					}
+					else if (elementArray[x, y] is SurfBiomass surfBiomass)
+					{
+						totalNutrient += surfBiomass.nutrient;
+					}
+				}
+			}
+		}
+
+		return totalNutrient;
 	}
 	
 	private enum DrawingState

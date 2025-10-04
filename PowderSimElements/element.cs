@@ -3,7 +3,7 @@ using Godot;
 
 public abstract class Element
 {
-	public Color color { get; protected set; }
+	public Color color { get; set; }
 
 	public Color baseColor { get; protected set; }
 	public double density { get; protected set; }

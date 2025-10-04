@@ -10,6 +10,8 @@ public class Spider : Life
 	private Queue<(int, int)> recentPositions = new Queue<(int, int)>();
 	private const int MAX_POSITION_HISTORY = 3; // Keep track of last 3 positions to prevent backtracking
 	private int lastMeaningfulStateChangeTick = 0; // To prevent rapid state changes
+
+	private int lastFlyEatTick = 0; // ticks until can eat another fly
 	private Web onWeb;
 	private SpiderFSM currentState = SpiderFSM.FALLING;
 	public enum SpiderFSM
@@ -32,7 +34,11 @@ public class Spider : Life
 	private bool isValidBuildDestination(int x, int y, Element[,] oldElementArray, int maxX, int maxY)
 	{
 		if (x == 0 || x == maxX - 1 || y == 0 || y == maxY - 1) return true; // bounds are valid
-		if (oldElementArray[x, y] != null && (oldElementArray[x, y].density > density || oldElementArray[x, y] is Web)) return true; // valid solid cell or web
+		if (oldElementArray[x, y] != null
+		&& (oldElementArray[x, y] is Web
+		|| oldElementArray[x, y] is Powder
+		|| oldElementArray[x, y] is Leaf
+		|| oldElementArray[x, y] is Fruit)) return true; // valid solid cell or web
 		return false;
 	}
 	private (int, int) getBuildDirection(int x, int y, Element[,] oldElementArray, int maxX, int maxY)
@@ -193,8 +199,9 @@ public class Spider : Life
 			{
 				if ((nx, ny) == (x, y)) { continue; }
 
-				if (oldElementArray[nx, ny] is Fly)
+				if (oldElementArray[nx, ny] is Fly fly && T - lastFlyEatTick > 75) // can eat a fly every 75 ticks
 				{
+					lastFlyEatTick = T;
 					// eat the fly
 					currentElementArray[nx, ny] = new Web();
 				}

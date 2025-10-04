@@ -146,7 +146,6 @@ public class Leaf : Seed
 
 		if (possibleGrowthPositions.Count > 0)
 		{
-			var rand = new Random();
 			var chosenPos = getBestGrowthPosition(possibleGrowthPositions.ToArray(), maxX, maxY, x, y, parentSeed.Item1, parentSeed.Item2);
 			//var chosenPos = possibleGrowthPositions[rand.Next(possibleGrowthPositions.Count)];
 			if (chosenPos == (-1, -1)) return false; // No valid position found
@@ -201,6 +200,25 @@ public class Leaf : Seed
 		if (seed == null || seed?.plantState == PlantState.Dying) // if parent seed is gone or dying, start dying
 		{
 			leafState = LeafState.Dying;
+		}
+
+		if (seed != null
+		&& leafState == LeafState.Growing
+		&& seed.plantState == PlantState.Mature
+		&& seed.nutrient >= 2f
+		&& seed.wetness >= 1f
+		&& seed.fruitCount < seed.maxFruitCount
+		)
+		{
+			if (rng.Randf() < 0.01f && y - 1 >= 0 && currentElementArray[x, y - 1] == null) // 1% chance each tick to grow fruit
+			{
+				// grow fruit
+				currentElementArray[x, y - 1] = new Fruit();
+				seed.nutrient -= 2f;
+				seed.wetness -= 1f;
+				seed.fruitCount++;
+				return;
+			}
 		}
 
 		if (leafState == LeafState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
