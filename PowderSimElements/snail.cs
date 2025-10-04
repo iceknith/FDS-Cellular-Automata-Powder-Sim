@@ -8,11 +8,11 @@ public class Snail : Life
 	private int moveInterval = 30; // ticks
 	private int lastMoveTick = 0;
 	private List<(int, int)> lastPositions = new List<(int, int)>(); // to avoid going back and forth
-	
+
 	// Infinite storage buffers for consumed nutrients and wetness
 	private float storedNutrient = 0.0f;
 	private float storedWetness = 0.0f;
-	
+
 	// Eating behavior
 	private int eatingCooldown = 0;
 	private const int EATING_WAIT_TIME = 10; // frames to wait after eating
@@ -97,11 +97,11 @@ public class Snail : Life
 					// Eat the surface biomass
 					storedNutrient += surfBiomass.nutrient;
 					storedWetness += surfBiomass.wetness;
-					
+
 					// Remove the surface biomass and move to its location
 					currentElementArray[nx, ny] = this;
 					currentElementArray[x, y] = null;
-					
+
 					return true;
 				}
 			}
@@ -118,29 +118,12 @@ public class Snail : Life
 		if (below is Soil soil)
 		{
 			soil.nutrient += storedNutrient;
-			soil.wetness += storedWetness;
+			float transferableWetness = Math.Min(storedWetness, 1f - soil.wetness); // ensure soil wetness does not exceed 1
+																					// for now, allow snail to transfer more wetness than it has stored (to be balanced later if needed)
+			soil.wetness += transferableWetness;
 			storedNutrient = 0;
-			storedWetness = 0;
+			storedWetness = -transferableWetness;
 			return;
-		}
-
-		// Check adjacent cells for soil
-		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++)
-		{
-			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
-			{
-				if (nx == x && ny == y) continue;
-
-				if (currentElementArray[nx, ny] is Soil adjacentSoil)
-				{
-					adjacentSoil.nutrient += storedNutrient;
-					float transferableWetness = Math.Min(storedWetness, 1f - adjacentSoil.wetness);
-					adjacentSoil.wetness += transferableWetness;
-					storedNutrient = 0;
-					storedWetness = -transferableWetness;
-					return;
-				}
-			}
 		}
 	}
 
@@ -148,7 +131,7 @@ public class Snail : Life
 	{
 		// Check if we can continue falling down
 		bool canFall = y + 1 < maxY && (currentElementArray[x, y + 1] == null || currentElementArray[x, y + 1] is Water);
-		
+
 		if (canFall)
 		{
 			// Continue falling
@@ -171,7 +154,7 @@ public class Snail : Life
 					for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
 					{
 						if (nx == x && ny == y) continue;
-						
+
 						Element target = currentElementArray[nx, ny];
 						if ((target == null || target is Water) && hasAdjacentSolidSurface(nx, ny, oldElementArray, maxX, maxY))
 						{
@@ -185,7 +168,7 @@ public class Snail : Life
 					}
 					if (foundSurface) break;
 				}
-				
+
 				if (!foundSurface)
 				{
 					// Still no solid surface, remain in falling state but don't move
@@ -226,7 +209,7 @@ public class Snail : Life
 
 		// Get all available cells where snail can move (empty or webs only)
 		var availableCells = new List<(int, int)>();
-		
+
 		for (int nx = Math.Max(0, x - 1); nx <= Math.Min(x + 1, maxX - 1); nx++)
 		{
 			for (int ny = Math.Max(0, y - 1); ny <= Math.Min(y + 1, maxY - 1); ny++)
@@ -234,7 +217,7 @@ public class Snail : Life
 				if (nx == x && ny == y) continue;
 
 				Element target = oldElementArray[nx, ny];
-				
+
 				// Can only move to empty spaces or through webs
 				if (target == null || target is Web || target is Liquid)
 				{
@@ -251,7 +234,7 @@ public class Snail : Life
 		{
 			// No valid moves available
 			lastPositions.Clear(); // reset history when stuck
-			
+
 
 			snailState = SnailState.Idle; // couldn't move but still on solid surface
 			return;
@@ -260,11 +243,11 @@ public class Snail : Life
 		// Choose a random valid cell to move to
 		int randomIndex = rng.RandiRange(0, availableCells.Count - 1);
 		(int, int) targetCell = availableCells[randomIndex];
-		
+
 		// Move to the target cell
 		int newX = targetCell.Item1;
 		int newY = targetCell.Item2;
-		
+
 		// Destroy web if moving through one
 		if (oldElementArray[newX, newY] is Web)
 		{
@@ -275,13 +258,13 @@ public class Snail : Life
 		currentElementArray[x, y] = currentElementArray[newX, newY];
 		currentElementArray[newX, newY] = this;
 		lastPositions.Add((x, y));
-		
+
 		// Keep position history manageable
 		if (lastPositions.Count > 5)
 		{
 			lastPositions.RemoveAt(0);
 		}
-		
+
 		snailState = SnailState.Idle;
 	}
 
@@ -295,14 +278,14 @@ public class Snail : Life
 			int nx = x + dx;
 			int ny = y + dy;
 			if (nx < 0 || nx >= maxX || ny < 0 || ny >= maxY) continue;
-				if (nx == x && ny == y) continue;
-				
-				Element neighbor = elementArray[nx, ny];
-				if (neighbor != null && !(neighbor is Liquid) && !(neighbor is Web) && !(neighbor is Gas) 
-					&& !(neighbor is Snail) && !(neighbor is Fly))
-				{
-					return true; // Found a solid surface that can support climbing
-				}
+			if (nx == x && ny == y) continue;
+
+			Element neighbor = elementArray[nx, ny];
+			if (neighbor != null && !(neighbor is Liquid) && !(neighbor is Web) && !(neighbor is Gas)
+				&& !(neighbor is Snail) && !(neighbor is Fly))
+			{
+				return true; // Found a solid surface that can support climbing
+			}
 		}
 		return false;
 	}
@@ -322,8 +305,7 @@ public class Snail : Life
 			storedNutrient + ";" +
 			storedWetness + ";" +
 			eatingCooldown + ";" +
-			lastMoveTick + ";" +
-			string.Join(";", lastPositions.Select(pos => $"{pos.Item1},{pos.Item2}"));
+			lastMoveTick + ";";
 	}
 
 	public override int setState(string state)
@@ -334,17 +316,7 @@ public class Snail : Life
 		storedNutrient = stateArgs[i++].ToFloat();
 		storedWetness = stateArgs[i++].ToFloat();
 		eatingCooldown = stateArgs[i++].ToInt();
-		lastPositions.Clear();
-		for (int j = 0; j < 5; j++)
-		{
-			if (i < stateArgs.Length)
-			{
-				lastPositions.Add((stateArgs[i++].ToInt(), stateArgs[i++].ToInt()));
-			}
-		}
-		lastMoveTick = stateArgs[i++].ToInt();
 		return i;
 	}
-
 
 }

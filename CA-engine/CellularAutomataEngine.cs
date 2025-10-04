@@ -1,10 +1,7 @@
 using Godot;
 using System;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
-using Godot.Collections;
-using static Godot.GD;
 public partial class CellularAutomataEngine : Node2D
 {
 

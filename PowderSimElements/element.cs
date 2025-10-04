@@ -21,7 +21,9 @@ public abstract class Element
 	public float wetness
 	{
 		get { return _wetness; }   // get method
-		set { _wetness = Math.Clamp(value, 0, 1); }  // set method
+		set {
+			ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 1);
+			_wetness = Math.Clamp(value, 0, 1); }  // set method
 	}
 
 	public virtual bool canMoveDownOnElement(Element elementWhereMovement)

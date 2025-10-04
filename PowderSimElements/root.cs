@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Godot;
 public class Root : Seed
 {
@@ -8,7 +7,6 @@ public class Root : Seed
 	private int lastActivity = 0;
 	private int activityInterval = 30;
 	private int lastGrowthTick = 0;
-	private int growthInterval = 2 * 60; // ticks
 
 	public Root() {} // DO NOT USE EXCEPT IF YOU'RE GONNA SET A STATE RIGHT AFTER
 

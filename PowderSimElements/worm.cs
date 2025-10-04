@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel.DataAnnotations;
 using Godot;
 public class Worm : Life
 {
@@ -9,6 +11,8 @@ public class Worm : Life
 	private int directionChangeTimer = 0;
 	private int directionChangeInterval = 10; // Change direction every 10 ticks (on average)
 	private int obstacleHitCooldown = 0; // Prevent immediate oscillation after hitting obstacle
+
+	private float wetnessBuffer = 0.0f; // to store excess wetness before transferring to soil
 
 	Soil inSoil = null;
 	public Worm()
@@ -68,7 +72,7 @@ public class Worm : Life
 				directionChangeTimer++;
 				if (obstacleHitCooldown > 0)
 					obstacleHitCooldown--;
-				
+
 				// Random direction change
 				if (directionChangeTimer >= directionChangeInterval)
 				{
@@ -98,7 +102,7 @@ public class Worm : Life
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}
-	
+
 	private bool eatNearbyBiomass(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 		// Check adjacent cells for biomass
@@ -159,7 +163,17 @@ public class Worm : Life
 		// Create soil with the nutrient and wetness of the biomass
 		Soil newSoil = new Soil();
 		newSoil.nutrient = biomassNutrient;
-		newSoil.wetness = biomassWetness;    // max wetness is 1, there may be a problem here if biomass wetness > 1
+
+		if (biomassWetness < 1) // empty buffer if biomass wetness < 1
+		{
+			float wetnessToTransfer = Math.Min(wetnessBuffer, 1 - biomassWetness);
+			biomassWetness += wetnessToTransfer;
+			wetnessBuffer -= wetnessToTransfer;
+		}
+
+		float wetnessToTransferToSoil = Math.Min(biomassWetness, 1f);
+		newSoil.wetness = wetnessToTransferToSoil;    // max wetness is 1, there may be a problem here if biomass wetness > 1 (this comment was right ...)
+		wetnessBuffer += biomassWetness - wetnessToTransferToSoil; // store excess wetness in buffer
 
 		currentElementArray[x, y] = newSoil;
 	}
@@ -213,5 +227,57 @@ public class Worm : Life
 	{
 		return base.inspectInfo() + $"\nState: {wormState} \nDirection: ({currentDirection.Item1}, {currentDirection.Item2}) \nDirection Timer: {directionChangeTimer}/{directionChangeInterval} \nObstacle Cooldown: {obstacleHitCooldown}";
 	}
+
+	public override string getState()
+	{
+		return base.getState()
+			+ ";" + (int)wormState
+			+ ";" + currentDirection.Item1
+			+ ";" + currentDirection.Item2
+			+ ";" + directionChangeTimer
+			+ ";" + obstacleHitCooldown
+			+ ";" + (inSoil != null ? inSoil.nutrient.ToString("F3") : "null")
+			+ ";" + (inSoil != null ? inSoil.wetness.ToString("F3") : "null")
+			+ ";" + wetnessBuffer.ToString("F3");
+	}
+
+	public override int setState(string state)
+	{
+		string[] parts = state.Split(';');
+		base.setState(string.Join(";", parts[0], parts[1])); // base state has 2 parts
+
+		if (parts.Length >= 9)
+		{
+			wormState = (WormState)int.Parse(parts[2]);
+			int dirX = int.Parse(parts[3]);
+			int dirY = int.Parse(parts[4]);
+			currentDirection = (dirX, dirY);
+			directionChangeTimer = int.Parse(parts[5]);
+			obstacleHitCooldown = int.Parse(parts[6]);
+
+			// Recreate inSoil if data is available
+			if (parts[7] != "null" && parts[8] != "null")
+			{
+				inSoil = new Soil();
+				inSoil.nutrient = float.Parse(parts[7]);
+				inSoil.wetness = float.Parse(parts[8]);
+			}
+			else
+			{
+				inSoil = null;
+			}
+
+			if (parts.Length >= 10)
+			{
+				wetnessBuffer = float.Parse(parts[9]);
+			}
+			else
+			{
+				wetnessBuffer = 0.0f;
+			}
+		}
+		return parts.Length;
+	}
+
 
 }
