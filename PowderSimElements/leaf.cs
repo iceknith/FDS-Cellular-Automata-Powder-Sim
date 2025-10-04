@@ -27,7 +27,7 @@ public class Leaf : Seed
 		flammability = 10;
 		nutrient = 0f;
 		maxNutrient = 5f;
-		wetness = 0f;
+		wetness = 0.1f;
 		ashCreationPercentage = 0.8f;
 	}
 	public Seed getParentSeed(Element[,] currentElementArray)
@@ -127,7 +127,7 @@ public class Leaf : Seed
 	public bool growLeaf(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 		if (nutrient < 1) return false;
-		if (wetness < 0.5f) return false;
+		if (wetness < 0.2f) return false;
 		if (y - 1 < 0) return false;
 
 		List<(int, int)> possibleGrowthPositions = [];
@@ -157,7 +157,7 @@ public class Leaf : Seed
 				parent.leafCount++;
 			}
 			nutrient -= 1f;
-			wetness -= 0.5f;
+			wetness -= 0.2f;
 			return true;
 		}
 		else
@@ -205,8 +205,7 @@ public class Leaf : Seed
 		if (seed != null
 		&& leafState == LeafState.Growing
 		&& seed.plantState == PlantState.Mature
-		&& seed.nutrient >= 2f
-		&& seed.wetness >= 1f
+		&& seed.nutrient >= 1f
 		&& seed.fruitCount < seed.maxFruitCount
 		)
 		{
@@ -214,8 +213,7 @@ public class Leaf : Seed
 			{
 				// grow fruit
 				currentElementArray[x, y - 1] = new Fruit();
-				seed.nutrient -= 2f;
-				seed.wetness -= 1f;
+				seed.nutrient -= 1f;
 				seed.fruitCount++;
 				return;
 			}
@@ -223,7 +221,7 @@ public class Leaf : Seed
 
 		if (leafState == LeafState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
 		{
-			SurfBiomass biomass = new SurfBiomass(wetness + 0.5f, nutrient + 1f); // add the creation nutrient and wetness
+			SurfBiomass biomass = new SurfBiomass(wetness + 0.6f, nutrient + 1.2f); // add the creation nutrient and wetness
 			currentElementArray[x, y] = biomass;
 			return;
 		}

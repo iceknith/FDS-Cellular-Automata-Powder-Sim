@@ -3,6 +3,7 @@ using Godot;
 
 public class Seed : Life
 {
+	public float lifetime = 600 * 60; // ticks
 	public float maxNutrient = 5f;
 	private int lastGrowthTick = 0;
 	private int growthInterval = 1 * 60; // ticks
@@ -35,7 +36,7 @@ public class Seed : Life
 		ashCreationPercentage = 0.2f;
 		maxLeafCount = rng.RandiRange(20, 30);
 		maxRootCount = rng.RandiRange(10, 20);
-		maxFruitCount = rng.RandiRange(1, 2);
+		maxFruitCount = rng.RandiRange(1, 3);
 		density = 15;
 		color = Colors.Burlywood;
 		flammability = 4;
@@ -106,6 +107,12 @@ public class Seed : Life
 	}
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
+		lifetime--;
+		if (lifetime <= 0 && currentElementArray[x, y] == this)
+		{
+			// Seed has withered away
+			plantState = PlantState.Dying;
+		}
 		// -- Falling state --
 		if (y + 1 < maxY && plantState == PlantState.Falling)
 		{
@@ -161,7 +168,7 @@ public class Seed : Life
 		// -- Dying state --
 		if (plantState == PlantState.Dying && rng.Randf() < 0.01f) // 1% chance to die definitively each tick
 		{
-			SurfBiomass biomass = new SurfBiomass(wetness, nutrient); // add the creation nutrient and wetness
+			SurfBiomass biomass = new SurfBiomass(wetness + 1f, nutrient + 2f); // add the creation nutrient and wetness
 			currentElementArray[x, y] = biomass;
 			return;
 		}

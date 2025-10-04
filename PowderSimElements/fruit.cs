@@ -7,7 +7,7 @@ public class Fruit : Life
 	public Fruit()
 	{
 		ashCreationPercentage = 0.0f;
-		density = 3;
+		density = 40;
 		color = Colors.Red;
 		flammability = 3;
 	}

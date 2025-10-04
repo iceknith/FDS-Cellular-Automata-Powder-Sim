@@ -73,6 +73,7 @@ public class Fly : Life
 						if (pollinateFruit(fruit))
 						{
 							reproduce(currentElementArray, x, y, maxX, maxY);
+							reproduce(currentElementArray, x, y, maxX, maxY);
 						}
 					}
 				}

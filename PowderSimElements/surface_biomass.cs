@@ -3,6 +3,8 @@ using Godot;
 public class SurfBiomass : Powder
 {
 	public float nutrient { get; set; }
+
+	new public float wetness; // this is new to allow wetness > 1
 	public SurfBiomass(float wetness, float nutrient)
 	{
 		density = 20;

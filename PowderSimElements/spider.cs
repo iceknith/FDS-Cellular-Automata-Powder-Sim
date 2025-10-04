@@ -199,7 +199,7 @@ public class Spider : Life
 			{
 				if ((nx, ny) == (x, y)) { continue; }
 
-				if (oldElementArray[nx, ny] is Fly fly && T - lastFlyEatTick > 75) // can eat a fly every 75 ticks
+				if (oldElementArray[nx, ny] is Fly fly && T - lastFlyEatTick > 75 * 10) // can eat a fly every 75 ticks
 				{
 					lastFlyEatTick = T;
 					// eat the fly

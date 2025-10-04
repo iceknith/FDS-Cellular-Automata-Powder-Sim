@@ -219,6 +219,16 @@ public class Snail : Life
 			return;
 		}
 
+		// small chance to stay idle instead of moving
+		if (rng.Randf() < 0.02f)
+		{
+			snailState = SnailState.Idle;
+			lastPositions.Clear(); // reset history when choosing to stay
+			return;
+		}
+
+
+
 		// Get all available cells where snail can move (empty or webs only)
 		var availableCells = new List<(int, int)>();
 		
@@ -260,8 +270,7 @@ public class Snail : Life
 		}
 
 		// Choose a random valid cell to move to
-		Random rng = new Random();
-		int randomIndex = rng.Next(availableCells.Count);
+		int randomIndex = rng.RandiRange(0, availableCells.Count - 1);
 		(int, int) targetCell = availableCells[randomIndex];
 		
 		// Move to the target cell

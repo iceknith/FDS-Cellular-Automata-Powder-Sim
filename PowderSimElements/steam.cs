@@ -33,6 +33,15 @@ public class Steam : Gas
 			if (neighbourCount >= 3) // condensate only if there are many other steam particles around
 			{
 				currentElementArray[x, y] = new Water(); // condensate
+
+				// small chance to create a water particle above if possible
+				if (y - 1 >= 0 && currentElementArray[x, y - 1] == null)
+				{
+					if (rng.Randf() < 0.1f) // 10% chance to create water above
+					{
+						currentElementArray[x, y - 1] = new Water();
+					}
+				}
 				return;
 			}
 		}
