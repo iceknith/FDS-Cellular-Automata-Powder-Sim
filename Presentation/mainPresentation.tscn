@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://byywe73idxrw8"]
+
+[ext_resource type="Script" uid="uid://dk7gsocowutmi" path="res://Presentation/main_presentation.gd" id="1_2jtip"]
+[ext_resource type="Script" uid="uid://blhtmeuo5dqnc" path="res://addons/scene_container/scenes/scene_container.gd" id="1_ue730"]
+[ext_resource type="PackedScene" uid="uid://bjpin82qg6vth" path="res://Presentation/slides/test_slide_1.tscn" id="2_a0wsv"]
+[ext_resource type="PackedScene" uid="uid://c4dbu5j4hho7o" path="res://Presentation/slides/test_slide_2.tscn" id="3_kf3nj"]
+[ext_resource type="PackedScene" uid="uid://clrsw6fo3fdc5" path="res://mainGame.tscn" id="4_kf3nj"]
+[ext_resource type="PackedScene" uid="uid://c85reml4d46lw" path="res://Presentation/transitions/fade_transition.tscn" id="6_kf3nj"]
+
+[node name="MainPresentation" type="Node"]
+script = ExtResource("1_2jtip")
+slides = Array[PackedScene]([ExtResource("2_a0wsv"), ExtResource("3_kf3nj"), ExtResource("4_kf3nj")])
+
+[node name="SceneContainer" type="SubViewportContainer" parent="." node_paths=PackedStringArray("transition")]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_ue730")
+transition = NodePath("SubViewport/FadeTransition")
+metadata/_custom_type_script = "uid://blhtmeuo5dqnc"
+
+[node name="SubViewport" type="SubViewport" parent="SceneContainer"]
+handle_input_locally = false
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="FadeTransition" parent="SceneContainer/SubViewport" instance=ExtResource("6_kf3nj")]
