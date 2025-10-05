@@ -15,6 +15,14 @@ public class Worm : Life
 	private float wetnessBuffer = 0.0f; // to store excess wetness before transferring to soil
 
 	Soil inSoil = null;
+
+	enum WormState
+	{
+		Moving,
+		Falling,
+	}
+	private WormState wormState = WormState.Falling;
+
 	public Worm()
 	{
 		ashCreationPercentage = 0.0f;
@@ -23,12 +31,6 @@ public class Worm : Life
 		flammability = 3;
 	}
 
-	enum WormState
-	{
-		Moving,
-		Falling,
-	}
-	private WormState wormState = WormState.Falling;
 	public override void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{
 		if (T - lastActivity < activityInterval)

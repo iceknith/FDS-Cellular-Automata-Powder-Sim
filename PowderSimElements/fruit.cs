@@ -81,6 +81,18 @@ public class Fruit : Life
 		return base.inspectInfo() + $"Pollinated: {pollinated}\nLifetime on soil: {lifetimeOnSoil / 60} seconds\n";
 	}
 
+	override public string getState()
+	{
+		return base.getState() + ";" + pollinated + ";" + lifetimeOnSoil;
+	}
 
+	override public int setState(string state)
+	{
+		int i = base.setState(state);
+		string[] stateArgs = state.Split(";", false);
+		pollinated = stateArgs[i++] == "True";
+		lifetimeOnSoil = stateArgs[i++].ToInt();
+		return i;
+	}
 
 }

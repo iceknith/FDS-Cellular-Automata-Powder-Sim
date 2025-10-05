@@ -301,7 +301,7 @@ public class Snail : Life
 	public override string getState()
 	{
 		return base.getState() + ";" +
-			(int)snailState + ";" +
+			(int) snailState + ";" +
 			storedNutrient + ";" +
 			storedWetness + ";" +
 			eatingCooldown + ";" +

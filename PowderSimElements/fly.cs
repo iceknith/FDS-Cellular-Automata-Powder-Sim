@@ -30,7 +30,7 @@ public class Fly : Life
 			currentElementArray[x, y] = null;
 			return;
 		}
-		
+
 		if (T - lastActivity < activityInterval)
 		{
 			// Not time to act yet
@@ -58,7 +58,7 @@ public class Fly : Life
 		directionChangeTimer++;
 		if (directionChangeTimer >= directionChangeInterval)
 		{
-			directionChangeTimer = rng.RandiRange(0, directionChangeInterval-1); // reset timer with some randomness
+			directionChangeTimer = rng.RandiRange(0, directionChangeInterval - 1); // reset timer with some randomness
 			changeDirection();
 		}
 		if (!tryMoveInDirection(currentElementArray, oldElementArray, x, y, maxX, maxY, currentDirection.Item1, currentDirection.Item2, T))
@@ -92,7 +92,7 @@ public class Fly : Life
 		// just move around in the dirt
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
-		
+
 	}
 
 	private void changeDirection()
@@ -168,4 +168,33 @@ public class Fly : Life
 		}
 		return false;
 	}
+
+	override public string getState()
+	{
+		return base.getState() + ";" +
+			lastActivity + ";" +
+			lifetime + ";" +
+			currentDirection.Item1 + ";" +
+			currentDirection.Item2 + ";" +
+			directionChangeTimer + ";" +
+			directionChangeInterval + ";" +
+			stuckInWeb + ";" +
+			stuckInWebTime;
+	}
+
+	override public int setState(string state)
+	{
+		int i = base.setState(state);
+		string[] stateArgs = state.Split(";", false);
+		lastActivity = stateArgs[i++].ToInt();
+		lifetime = stateArgs[i++].ToInt();
+		currentDirection.Item1 = stateArgs[i++].ToInt();
+		currentDirection.Item1 = stateArgs[i++].ToInt();
+		directionChangeTimer = stateArgs[i++].ToInt();
+		directionChangeInterval = stateArgs[i++].ToInt();
+		stuckInWeb = stateArgs[i++] == "True";
+		stuckInWebTime = stateArgs[i++].ToInt();
+		return i;
+	}
+
 }
