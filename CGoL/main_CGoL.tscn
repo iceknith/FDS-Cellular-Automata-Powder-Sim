@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ce8kb7bg7yma0"]
+
+[ext_resource type="Script" uid="uid://ga8e3lo6bad2" path="res://CGoL/main_c_go_l.gd" id="1_ulyyv"]
+
+[node name="MainCGoL" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ulyyv")
