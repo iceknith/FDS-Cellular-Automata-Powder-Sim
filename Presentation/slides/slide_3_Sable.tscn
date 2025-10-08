@@ -7,7 +7,7 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_5jniq"]
 font = ExtResource("1_yi7l0")
-font_size = 35
+font_size = 40
 font_color = Color(1, 1, 1, 0.5882353)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_2apma"]
@@ -15,7 +15,7 @@ color = Color(1, 1, 1, 0.39215687)
 
 [sub_resource type="LabelSettings" id="LabelSettings_db4w5"]
 font = ExtResource("2_5jniq")
-font_size = 30
+font_size = 35
 font_color = Color(1, 1, 1, 0.78431374)
 
 [node name="Slide 3 - Sable" type="Control"]
