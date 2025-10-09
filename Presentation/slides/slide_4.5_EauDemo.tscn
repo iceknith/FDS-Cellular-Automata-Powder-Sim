@@ -1,17 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://boe8idn86fqke"]
+[gd_scene load_steps=6 format=3 uid="uid://chkwg6r603tyu"]
 
-[ext_resource type="FontFile" uid="uid://ca2vruqos2mvv" path="res://assets/JetBrains_Mono/static/JetBrainsMono-Regular.ttf" id="2_s772h"]
-[ext_resource type="PackedScene" uid="uid://ce8kb7bg7yma0" path="res://CGoL/main_CGoL.tscn" id="3_0tt0a"]
-[ext_resource type="Script" uid="uid://cb3flegog4lre" path="res://CGoL/main_demo_sable.gd" id="3_40p34"]
+[ext_resource type="FontFile" uid="uid://ca2vruqos2mvv" path="res://assets/JetBrains_Mono/static/JetBrainsMono-Regular.ttf" id="1_eo03b"]
+[ext_resource type="PackedScene" uid="uid://ce8kb7bg7yma0" path="res://CGoL/main_CGoL.tscn" id="2_gh1c8"]
+[ext_resource type="Script" uid="uid://ccrfjeq1bifg2" path="res://CGoL/main_eau_demo.gd" id="3_eo03b"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_n18vl"]
-font = ExtResource("2_s772h")
+font = ExtResource("1_eo03b")
 font_size = 30
 font_color = Color(1, 1, 1, 0.78431374)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r3ngw"]
 
-[node name="Demo-Sable2" type="Control"]
+[node name="Demo-Sable" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,7 +47,7 @@ size_flags_vertical = 0
 
 [node name="Title2" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Le sable en action !"
+text = "L'eau en action !"
 label_settings = SubResource("LabelSettings_n18vl")
 horizontal_alignment = 1
 
@@ -56,13 +56,13 @@ layout_mode = 2
 theme_override_constants/separation = 25
 theme_override_styles/separator = SubResource("StyleBoxEmpty_r3ngw")
 
-[node name="DemoSable" parent="MarginContainer/VBoxContainer" instance=ExtResource("3_0tt0a")]
+[node name="DemoEau" parent="MarginContainer/VBoxContainer" instance=ExtResource("2_gh1c8")]
 modulate = Color(1, 1, 1, 0.78431374)
 custom_minimum_size = Vector2(500, 500)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-script = ExtResource("3_40p34")
+script = ExtResource("3_eo03b")
 cell_size = Vector2(15, 15)
 
 [node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
@@ -86,6 +86,6 @@ text = "Play"
 layout_mode = 2
 text = "Pause"
 
-[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Next" to="MarginContainer/VBoxContainer/DemoSable" method="update_grid"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Play" to="MarginContainer/VBoxContainer/DemoSable" method="set_auto_process"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Pause" to="MarginContainer/VBoxContainer/DemoSable" method="set_no_auto_process"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Next" to="MarginContainer/VBoxContainer/DemoEau" method="update_grid"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Play" to="MarginContainer/VBoxContainer/DemoEau" method="set_auto_process"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Buttons/Pause" to="MarginContainer/VBoxContainer/DemoEau" method="set_no_auto_process"]

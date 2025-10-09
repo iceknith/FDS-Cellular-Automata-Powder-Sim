@@ -15,6 +15,7 @@ var neighbours:Array[Vector2] = [
 	Vector2(1, 1)
 ]
 var auto_process:bool = false
+var last_tick = 0
 
 func _ready() -> void:
 	print(size)
@@ -37,7 +38,9 @@ func _draw() -> void:
 			draw_rect(cell_rect, Color.WHITE, grid[x][y])
 
 func _process(delta: float) -> void:
-	if auto_process:
+	var t = Time.get_ticks_msec()
+	if auto_process && t - last_tick >= 120:
+		last_tick = t
 		update_grid()
 	elif Input.is_action_pressed("LeftClick"):
 		var mouse_pos = get_local_mouse_position() / cell_size
