@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Cellular Automata"
-run/main_scene="uid://clrsw6fo3fdc5"
+run/main_scene="uid://byywe73idxrw8"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

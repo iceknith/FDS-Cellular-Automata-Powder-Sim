@@ -13,6 +13,14 @@ outline_color = Color(0, 0, 0, 1)
 [node name="MainGame" type="Node"]
 script = ExtResource("1_3ttq8")
 
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.5566746, 0.5566746, 0.8263328, 1)
+
 [node name="CellularAutomataEngine" parent="." instance=ExtResource("2_l7q4m")]
 
 [node name="Control" type="MarginContainer" parent="."]

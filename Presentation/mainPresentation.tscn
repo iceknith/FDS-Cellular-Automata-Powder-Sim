@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://byywe73idxrw8"]
+[gd_scene load_steps=12 format=3 uid="uid://byywe73idxrw8"]
 
 [ext_resource type="Script" uid="uid://dk7gsocowutmi" path="res://Presentation/main_presentation.gd" id="1_2jtip"]
 [ext_resource type="Script" uid="uid://blhtmeuo5dqnc" path="res://addons/scene_container/scenes/scene_container.gd" id="1_ue730"]
@@ -14,7 +14,7 @@
 
 [node name="MainPresentation" type="Node"]
 script = ExtResource("1_2jtip")
-slides = Array[PackedScene]([ExtResource("2_a0wsv"), ExtResource("2_nhwbb"), ExtResource("3_wqbx7"), ExtResource("4_wbw4r"), ExtResource("6_38aws"), ExtResource("7_m0n0c"), ExtResource("7_rpi3i"), ExtResource("9_m0n0c"), ExtResource("4_kf3nj")])
+slides = Array[PackedScene]([ExtResource("2_nhwbb"), ExtResource("3_wqbx7"), ExtResource("4_wbw4r"), ExtResource("6_38aws"), ExtResource("7_m0n0c"), ExtResource("7_rpi3i"), ExtResource("9_m0n0c"), ExtResource("4_kf3nj")])
 
 [node name="SceneContainer" type="SubViewportContainer" parent="." node_paths=PackedStringArray("transition")]
 anchors_preset = 15
