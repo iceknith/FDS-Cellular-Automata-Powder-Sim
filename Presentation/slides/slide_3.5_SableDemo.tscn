@@ -63,7 +63,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("3_40p34")
-cell_size = Vector2(15, 15)
+cell_size = Vector2(20, 20)
 
 [node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
