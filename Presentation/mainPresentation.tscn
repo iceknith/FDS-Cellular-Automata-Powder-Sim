@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://byywe73idxrw8"]
+[gd_scene load_steps=8 format=3 uid="uid://byywe73idxrw8"]
 
 [ext_resource type="Script" uid="uid://dk7gsocowutmi" path="res://Presentation/main_presentation.gd" id="1_2jtip"]
 [ext_resource type="Script" uid="uid://blhtmeuo5dqnc" path="res://addons/scene_container/scenes/scene_container.gd" id="1_ue730"]
-[ext_resource type="PackedScene" uid="uid://bjpin82qg6vth" path="res://Presentation/slides/test_slide_1.tscn" id="2_a0wsv"]
 [ext_resource type="PackedScene" uid="uid://bb0hy7rqrudg0" path="res://Presentation/slides/title_slide.tscn" id="2_nhwbb"]
 [ext_resource type="PackedScene" uid="uid://c2j5n6k1wkq4v" path="res://Presentation/slides/slide_1_intro.tscn" id="3_wqbx7"]
 [ext_resource type="PackedScene" uid="uid://clrsw6fo3fdc5" path="res://mainGame.tscn" id="4_kf3nj"]
@@ -11,7 +10,7 @@
 
 [node name="MainPresentation" type="Node"]
 script = ExtResource("1_2jtip")
-slides = Array[PackedScene]([ExtResource("2_a0wsv"), ExtResource("2_nhwbb"), ExtResource("3_wqbx7"), ExtResource("4_wbw4r"), ExtResource("4_kf3nj")])
+slides = Array[PackedScene]([ExtResource("2_nhwbb"), ExtResource("3_wqbx7"), ExtResource("4_wbw4r"), ExtResource("4_kf3nj")])
 
 [node name="SceneContainer" type="SubViewportContainer" parent="." node_paths=PackedStringArray("transition")]
 anchors_preset = 15
