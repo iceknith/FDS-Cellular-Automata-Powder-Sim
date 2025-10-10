@@ -47,7 +47,7 @@ public class Leaf : Seed
 		Seed seed = getParentSeed(currentElementArray);
 		if (seed != null)
 		{
-			color = seed.plantColor;
+			color = new Color(seed.plantColor);
 		}
 	}
 	private bool IsBehindGrowthDirection(int pos, int origin, int dir)
@@ -185,7 +185,7 @@ public class Leaf : Seed
 	public void transferNutrientsToChildLeafs(Element[,] currentElementArray)
 	{
 		if (childLeafs.Count == 0) return;
-		float maxNutrientTransferAmountPerChild = Math.Min(nutrient / childLeafs.Count, 0.5f); // max 0.5 nutrient per child per activity tick
+		float maxNutrientTransferAmountPerChild = Math.Min(nutrient / childLeafs.Count, 0.2f); // max 0.2 nutrient per child per activity tick
 		float maxWetnessTransferAmountPerChild = Math.Min(wetness / childLeafs.Count, 0.1f); // max 0.1 wetness per child per activity tick
 		foreach (var pos in childLeafs)
 		{
@@ -245,7 +245,6 @@ public class Leaf : Seed
 		{
 			lastGrowthTick = T;
 			growLeaf(currentElementArray, x, y, maxX, maxY);
-			transferNutrientsToChildLeafs(currentElementArray);
 
 		}
 
@@ -254,10 +253,7 @@ public class Leaf : Seed
 			leafState = LeafState.Growing;
 		}
 
-		if (leafState == LeafState.Sleeping)
-		{
-			transferNutrientsToChildLeafs(currentElementArray);
-		}
+		transferNutrientsToChildLeafs(currentElementArray);
 
 		if (!alignedToPlantColor){
 			alignToPlantColor(currentElementArray);

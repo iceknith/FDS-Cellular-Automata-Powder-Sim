@@ -12,6 +12,8 @@ public class Seed : Life
 	private int maturityTime;
 
 	public Color plantColor = Colors.Green;
+	public Color basePlantColor = Colors.Green;
+	public Color darkerPlantColor = Colors.DarkGreen;
 
 	public int maxLeafCount;
 	public int leafCount = 0;
@@ -38,10 +40,10 @@ public class Seed : Life
 		ashCreationPercentage = 0.2f;
 		maxLeafCount = rng.RandiRange(30, 50);
 		maxRootCount = rng.RandiRange(10, 20);
-		maxFruitCount = rng.RandiRange(1, 3);
+		maxFruitCount = rng.RandiRange(1, 2);
 		density = 15;
 		color = Colors.Burlywood;
-		plantColor = getPlantColor();
+		setPlantColor();
 		flammability = 4;
 		nutrient = 2f;
 		wetness = 1f;
@@ -60,25 +62,32 @@ public class Seed : Life
 		return false;
 	}
 	
-	private Color getPlantColor()
+	private void setPlantColor()
 	{
 		// same to modulateColor
-		float w = rng.RandfRange(0.0f, 0.1f);
-		Color modulatedColor = plantColor.Lightened(w);
-		float z = rng.RandfRange(0.0f, 0.1f);
+
+
+		float w = rng.RandfRange(0.0f, 0.7f);
+		float z = rng.RandfRange(0.0f, 0.4f);
+		basePlantColor = basePlantColor.Lerp(Colors.Yellow, w/1.5f);
+		basePlantColor = basePlantColor.Lerp(Colors.Brown, z);
+
+		Color modulatedColor = basePlantColor.Lightened(w);
 		modulatedColor = modulatedColor.Darkened(z);
-		return modulatedColor;
+
+		darkerPlantColor = modulatedColor.Darkened(0.5f);
+		basePlantColor = modulatedColor;
 	}
 	private void updatePlantColor()
 	{
 		if (leafCount == 0) return;
-		// Update plant color based on number of leaves (more leaves = darker green)
-		float t = Math.Min((float)leafCount / maxLeafCount, 1f);
-		plantColor = Colors.DarkGreen.Lerp(Colors.Green, t);
+		// Update plant color based on number of leaves (more leaves = lighter green)
+		float t = Math.Min((float)leafCount / (maxLeafCount - 20), 1f);
+		plantColor = darkerPlantColor.Lerp(basePlantColor, t);
 
 		if (plantState == PlantState.Dying)
 		{
-			// slowly turn brown when dying
+			// slowly turn brown when dying (currently not implemented)
 			plantColor = plantColor.Lerp(Colors.SaddleBrown, 0.01f);
 		}
 	}
