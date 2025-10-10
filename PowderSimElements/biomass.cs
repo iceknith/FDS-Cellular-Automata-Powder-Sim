@@ -11,6 +11,7 @@ public class Biomass : Powder
 		color = Colors.Khaki;
 		this.wetness = wetness;
 		this.nutrient = nutrient;
+		modulateColor();
 	}
 
 	override public string getState()

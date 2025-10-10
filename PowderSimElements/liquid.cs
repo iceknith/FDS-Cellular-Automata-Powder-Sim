@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using Godot;
 
@@ -6,11 +7,27 @@ public class Liquid : Element
 	protected int directionX = 1;
 	private int maxLifetime = 60 * 3;
 	private int lifetime;
+	public float modulationIntensity = 0.075f;
+	private float random_offset;
+
 	public Liquid()
 	{
 		lifetime = maxLifetime;
 		directionX = 2 * rng.RandiRange(0, 1) - 1; // Random start direction
+		random_offset = rng.RandfRange(0.0f, 3.0f);
 	}
+
+    public override void updateColor(int T)
+    {
+		base.updateColor(T);
+		//slowly modulate color over time using sine wave
+		float modulationSpeed = random_offset * 0.005f;
+		float modulation = (Mathf.Sin(T * modulationSpeed + random_offset) + 1) / 2; // value between 0 and 1
+		float w = modulation * modulationIntensity;
+		float z = (1 - modulation) * modulationIntensity;
+		color = color.Lightened(w);
+		color = color.Darkened(z);
+    }
 
 	/// <summary>
 	/// Will trigger when the liquid tries to evaporates.

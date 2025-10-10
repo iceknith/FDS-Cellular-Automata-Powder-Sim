@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Data;
 
 
 public class Soil : Powder
@@ -24,7 +25,15 @@ public class Soil : Powder
 		flammability = 0;
 		wetness = 0.0f;
 		nutrient = 0.0f;
+		modulateColor();
 	}
+
+    public override void modulateColor(float intensity = 0.05F)
+    {
+		float z = rng.RandfRange(0.0f, intensity);
+		baseColor = baseColor.Darkened(z);
+    }
+
 
 	override public void updateColor(int T)
 	{

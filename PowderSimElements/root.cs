@@ -20,6 +20,7 @@ public class Root : Seed
 		ashCreationPercentage = 0.8f;
 		nutrient = 0f;
 		wetness = 0f;
+		modulateColor();
 	}
 
 	/// <summary>

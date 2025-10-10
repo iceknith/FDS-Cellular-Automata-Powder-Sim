@@ -7,6 +7,7 @@ public class Wood : Life
 		color = Colors.Brown;
 		flammability = 10;
 		ashCreationPercentage = 0.8f;
+		modulateColor(0.05f);
 	}
 	override public void update(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY, int T)
 	{

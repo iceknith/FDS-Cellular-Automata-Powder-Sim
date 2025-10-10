@@ -5,8 +5,9 @@ using System.Runtime.InteropServices;
 public class Leaf : Seed
 {
 	private int lastGrowthTick = 0;
-	private int growthInterval = 2 * 60; // ticks
+	private int growthInterval = 3 * 60; // ticks
 	private LeafState leafState = LeafState.Growing;
+	private bool alignedToPlantColor = false;
 	private List<(int, int)> childLeafs = [];
 	private enum LeafState
 	{
@@ -17,7 +18,7 @@ public class Leaf : Seed
 
 	private (int, int) parentSeed;
 
-	public Leaf() {} // DO NOT USE EXCEPT IF YOU'RE GONNA SET A STATE RIGHT AFTER
+	public Leaf() { } // DO NOT USE EXCEPT IF YOU'RE GONNA SET A STATE RIGHT AFTER
 
 	public Leaf((int, int) parentSeed)
 	{
@@ -29,6 +30,8 @@ public class Leaf : Seed
 		maxNutrient = 5f;
 		wetness = 0.1f;
 		ashCreationPercentage = 0.8f;
+
+		modulateColor();
 	}
 	public Seed getParentSeed(Element[,] currentElementArray)
 	{
@@ -37,6 +40,15 @@ public class Leaf : Seed
 			return seed;
 		}
 		return null;
+	}
+
+	public void alignToPlantColor(Element[,] currentElementArray)
+	{
+		Seed seed = getParentSeed(currentElementArray);
+		if (seed != null)
+		{
+			color = seed.plantColor;
+		}
 	}
 	private bool IsBehindGrowthDirection(int pos, int origin, int dir)
 	{
@@ -124,13 +136,16 @@ public class Leaf : Seed
 		return bestPos;
 	}
 
-	public bool growLeaf(Element[,] oldElementArray, Element[,] currentElementArray, int x, int y, int maxX, int maxY)
+	public bool growLeaf(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
 	{
 		if (nutrient < 1) return false;
 		if (wetness < 0.2f) return false;
 		if (y - 1 < 0) return false;
 
 		List<(int, int)> possibleGrowthPositions = [];
+
+		Seed seed = getParentSeed(currentElementArray);
+		if (seed?.leafCount >= seed?.maxLeafCount) return false;
 
 
 		// 3 cardinal growth direction
@@ -209,7 +224,7 @@ public class Leaf : Seed
 		&& seed.fruitCount < seed.maxFruitCount
 		)
 		{
-			if (rng.Randf() < 0.01f && y - 1 >= 0 && currentElementArray[x, y - 1] == null) // 1% chance each tick to grow fruit
+			if (rng.Randf() < 0.01f && y - 1 >= 0 && currentElementArray[x, y - 1] == null && y + 1 < maxY && currentElementArray[x, y + 1] is Leaf) // 1% chance each tick to grow fruit
 			{
 				// grow fruit
 				currentElementArray[x, y - 1] = new Fruit();
@@ -229,8 +244,14 @@ public class Leaf : Seed
 		if (leafState == LeafState.Growing && T - lastGrowthTick >= growthInterval)
 		{
 			lastGrowthTick = T;
-			growLeaf(oldElementArray, currentElementArray, x, y, maxX, maxY);
+			growLeaf(currentElementArray, x, y, maxX, maxY);
+			transferNutrientsToChildLeafs(currentElementArray);
 
+		}
+
+		if (leafState == LeafState.Sleeping && rng.Randf() < 0.001f) // 0.1% chance to wake up each tick
+		{
+			leafState = LeafState.Growing;
 		}
 
 		if (leafState == LeafState.Sleeping)
@@ -238,6 +259,10 @@ public class Leaf : Seed
 			transferNutrientsToChildLeafs(currentElementArray);
 		}
 
+		if (!alignedToPlantColor){
+			alignToPlantColor(currentElementArray);
+			alignedToPlantColor = true;
+		}
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}

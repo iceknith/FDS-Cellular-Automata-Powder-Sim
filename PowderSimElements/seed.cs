@@ -11,6 +11,8 @@ public class Seed : Life
 	public int matureLifetime = 120 * 60; // ticks
 	private int maturityTime;
 
+	public Color plantColor = Colors.Green;
+
 	public int maxLeafCount;
 	public int leafCount = 0;
 	
@@ -34,11 +36,12 @@ public class Seed : Life
 	public Seed()
 	{
 		ashCreationPercentage = 0.2f;
-		maxLeafCount = rng.RandiRange(20, 30);
+		maxLeafCount = rng.RandiRange(30, 50);
 		maxRootCount = rng.RandiRange(10, 20);
 		maxFruitCount = rng.RandiRange(1, 3);
 		density = 15;
 		color = Colors.Burlywood;
+		plantColor = getPlantColor();
 		flammability = 4;
 		nutrient = 2f;
 		wetness = 1f;
@@ -50,11 +53,34 @@ public class Seed : Life
 		if (y + 1 < maxY && currentElementArray[x, y + 1] is Soil)
 		{
 			currentElementArray[x, y + 1] = new Root((x, y));
-			rootCount ++;
+			rootCount++;
 			nutrient -= 1f;
 			return true;
 		}
 		return false;
+	}
+	
+	private Color getPlantColor()
+	{
+		// same to modulateColor
+		float w = rng.RandfRange(0.0f, 0.1f);
+		Color modulatedColor = plantColor.Lightened(w);
+		float z = rng.RandfRange(0.0f, 0.1f);
+		modulatedColor = modulatedColor.Darkened(z);
+		return modulatedColor;
+	}
+	private void updatePlantColor()
+	{
+		if (leafCount == 0) return;
+		// Update plant color based on number of leaves (more leaves = darker green)
+		float t = Math.Min((float)leafCount / maxLeafCount, 1f);
+		plantColor = Colors.DarkGreen.Lerp(Colors.Green, t);
+
+		if (plantState == PlantState.Dying)
+		{
+			// slowly turn brown when dying
+			plantColor = plantColor.Lerp(Colors.SaddleBrown, 0.01f);
+		}
 	}
 
 	private (int, int) growStartingLeaf(Element[,] currentElementArray, int x, int y, int maxX, int maxY)
@@ -172,7 +198,7 @@ public class Seed : Life
 			currentElementArray[x, y] = biomass;
 			return;
 		}
-
+		updatePlantColor();
 		burn(oldElementArray, currentElementArray, x, y, maxX, maxY, T);
 		updateColor(T);
 	}

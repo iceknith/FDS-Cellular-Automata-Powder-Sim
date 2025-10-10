@@ -10,6 +10,7 @@ public class Water : Liquid
         color = Colors.Blue;
         flammability = 0;
         wetness = 1.0f;
+        modulateColor(0.05f);
     }
 
     public override void onEvaporate(Element[,] currentElementArray, int x, int y)

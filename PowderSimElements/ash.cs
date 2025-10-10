@@ -6,6 +6,6 @@ public class Ash : Soil
 	{
 		density = 19;
 		color = Colors.Gray;
-		nutrient = 1.0f; // ash is very nutritious (yum :3)
+		nutrient = 5.0f; // ash is very nutritious (yum :3)
 	}
 }

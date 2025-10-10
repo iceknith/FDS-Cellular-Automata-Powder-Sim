@@ -11,6 +11,7 @@ public class SurfBiomass : Powder
 		color = Colors.DarkGreen;
 		this.wetness = wetness;
 		this.nutrient = nutrient;
+		modulateColor();
 	}
 
 	override public string getState()

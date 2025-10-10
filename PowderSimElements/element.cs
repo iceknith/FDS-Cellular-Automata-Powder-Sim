@@ -155,6 +155,11 @@ public abstract class Element
 		else return null;
 	}
 
+	virtual public void modulateColor(float intensity = 0.05f){
+		float z = rng.RandfRange(0.0f, intensity);
+		color = color.Darkened(z);
+	}
+
 	virtual public int setState(string state)
 	{
 		int i = 0;
