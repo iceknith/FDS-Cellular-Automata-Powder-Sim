@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.5566746, 0.5566746, 0.8263328, 1)
+color = Color(0.4686678, 0.6325981, 0.950756, 1)
 
 [node name="CellularAutomataEngine" parent="." instance=ExtResource("2_l7q4m")]
 

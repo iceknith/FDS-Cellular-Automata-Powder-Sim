@@ -6,7 +6,7 @@ public class Sand : Powder
 	{
 		density = 20;
 		color = Colors.Yellow;
-		modulateColor();
+		modulateColor(0.2f);
 	}
 
 	public override void modulateColor(float intensity = 0.05F)
